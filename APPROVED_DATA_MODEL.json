@@ -1,0 +1,2469 @@
+{
+  "error": null,
+  "model": {
+    "kpis": [
+      {
+        "fact": "fact_reservations",
+        "name": "Total Bookings",
+        "grain": "hotel_id, channel_id, segment_id, DATE_TRUNC('month', booked_at)",
+        "filter": "status != 'CANCELLED'",
+        "format": "integer",
+        "numerator": "COUNT(DISTINCT reservation_id)",
+        "rationale": "Count of reservations excluding cancelled bookings. Core volume metric for reservation activity. Uses fact_reservations with filter to exclude cancelled status. Aggregates by hotel, channel, segment and month.",
+        "denominator": "",
+        "evidence_refs": [
+          "ontology-upload:fc63b28958a292918871",
+          "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.total_bookings",
+          "tech:30e3c1728503a02629e8437ff91a01a6"
+        ]
+      },
+      {
+        "fact": "fact_folio_charges",
+        "name": "Total Revenue",
+        "grain": "hotel_id, charge_type, DATE_TRUNC('month', charge_date)",
+        "filter": "",
+        "format": "decimal(14,2)",
+        "numerator": "SUM(charge_amount)",
+        "rationale": "Sum of all folio charges including room and ancillary revenue. Comprehensive revenue measure across all charge types. Uses fact_folio_charges summing charge_amount. Aggregates by hotel, charge type and month. Currency conversion required per open question.",
+        "denominator": "",
+        "evidence_refs": [
+          "ontology-upload:fc63b28958a292918871",
+          "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.total_revenue",
+          "tech:41c9bd2e43e0e7051f06227c06dc6ac9"
+        ]
+      },
+      {
+        "fact": "fact_daily_hotel_performance",
+        "name": "Occupancy %",
+        "grain": "hotel_id, DATE_TRUNC('month', business_date)",
+        "filter": "rooms_available > 0",
+        "format": "percent",
+        "numerator": "SUM(rooms_sold)",
+        "rationale": "Percentage of available rooms that are occupied. Calculated as rooms_sold / rooms_available from daily hotel performance records. Must use the same hotel-day performance records as ADR and RevPAR per requirement. Uses fact_daily_hotel_performance with denominator guard. Aggregates by hotel and month.",
+        "denominator": "SUM(rooms_available)",
+        "evidence_refs": [
+          "ontology-upload:fc63b28958a292918871",
+          "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.occupancy_pct",
+          "tech:c3b2522fd6daa3e5e0f2403165d22f2e"
+        ]
+      },
+      {
+        "fact": "fact_daily_hotel_performance",
+        "name": "ADR (Average Daily Rate)",
+        "grain": "hotel_id, DATE_TRUNC('month', business_date)",
+        "filter": "rooms_sold > 0",
+        "format": "decimal(14,2)",
+        "numerator": "SUM(room_revenue)",
+        "rationale": "Average revenue per occupied room. Calculated as room_revenue / rooms_sold from daily hotel performance records. Must use the same hotel-day performance records as Occupancy % and RevPAR per requirement. Uses fact_daily_hotel_performance with denominator guard. Aggregates by hotel and month. Currency per open question.",
+        "denominator": "SUM(rooms_sold)",
+        "evidence_refs": [
+          "ontology-upload:fc63b28958a292918871",
+          "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.adr",
+          "tech:c3b2522fd6daa3e5e0f2403165d22f2e"
+        ]
+      },
+      {
+        "fact": "fact_daily_hotel_performance",
+        "name": "RevPAR (Revenue Per Available Room)",
+        "grain": "hotel_id, DATE_TRUNC('month', business_date)",
+        "filter": "rooms_available > 0",
+        "format": "decimal(14,2)",
+        "numerator": "SUM(room_revenue)",
+        "rationale": "Revenue per available room regardless of occupancy. Calculated as room_revenue / rooms_available from daily hotel performance records. Must use the same hotel-day performance records as Occupancy % and ADR per requirement. Uses fact_daily_hotel_performance with denominator guard. Aggregates by hotel and month. Currency per open question.",
+        "denominator": "SUM(rooms_available)",
+        "evidence_refs": [
+          "ontology-upload:fc63b28958a292918871",
+          "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.revpar",
+          "tech:c3b2522fd6daa3e5e0f2403165d22f2e"
+        ]
+      },
+      {
+        "fact": "fact_reservations",
+        "name": "Cancellation %",
+        "grain": "hotel_id, DATE_TRUNC('month', booked_at)",
+        "filter": "",
+        "format": "percent",
+        "numerator": "COUNT(DISTINCT CASE WHEN status = 'CANCELLED' THEN reservation_id END)",
+        "rationale": "Percentage of reservations that were cancelled. Ratio of cancelled reservations to total reservations. Uses fact_reservations with conditional count for numerator. Aggregates by hotel and month.",
+        "denominator": "COUNT(DISTINCT reservation_id)",
+        "evidence_refs": [
+          "ontology-upload:fc63b28958a292918871",
+          "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.cancellation_pct",
+          "tech:30e3c1728503a02629e8437ff91a01a6"
+        ]
+      },
+      {
+        "fact": "fact_reservations",
+        "name": "Average Stay",
+        "grain": "hotel_id, DATE_TRUNC('month', booked_at)",
+        "filter": "status != 'CANCELLED'",
+        "format": "decimal(5,2)",
+        "numerator": "AVG(nights)",
+        "rationale": "Average length of stay in nights for completed reservations. Mean of nights attribute across relevant reservations. Uses fact_reservations with filter to exclude cancelled. Aggregates by hotel and month. Open question on whether to include only CHECKED_OUT or also CONFIRMED and CHECKED_IN.",
+        "denominator": "",
+        "evidence_refs": [
+          "ontology-upload:fc63b28958a292918871",
+          "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.average_stay",
+          "tech:30e3c1728503a02629e8437ff91a01a6"
+        ]
+      },
+      {
+        "fact": "fact_reservations",
+        "name": "Repeat Guest %",
+        "grain": "hotel_id, DATE_TRUNC('month', booked_at)",
+        "filter": "",
+        "format": "percent",
+        "numerator": "COUNT(DISTINCT CASE WHEN is_repeat_guest = 1 THEN reservation_id END)",
+        "rationale": "Percentage of reservations made by guests with prior stays. Calculated from is_repeat_guest flag on reservations. Uses fact_reservations with conditional count for numerator. Aggregates by hotel and month. Open question on how is_repeat_guest is determined.",
+        "denominator": "COUNT(DISTINCT reservation_id)",
+        "evidence_refs": [
+          "ontology-upload:fc63b28958a292918871",
+          "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.repeat_guest_pct",
+          "tech:30e3c1728503a02629e8437ff91a01a6"
+        ]
+      },
+      {
+        "fact": "fact_reservations",
+        "name": "No Show %",
+        "grain": "hotel_id, DATE_TRUNC('month', booked_at)",
+        "filter": "",
+        "format": "percent",
+        "numerator": "COUNT(DISTINCT CASE WHEN UPPER(REGEXP_REPLACE(status, '[^A-Z0-9]', '')) IN ('NS','NOSHOW') THEN reservation_id END)",
+        "rationale": "No-show uses the measured NS and NOSHOW-normalized reservation statuses; the denominator is all reservations at the reviewed grain.",
+        "denominator": "COUNT(DISTINCT reservation_id)",
+        "evidence_refs": [
+          "ontology-upload:fc63b28958a292918871",
+          "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.no_show_pct",
+          "tech:30e3c1728503a02629e8437ff91a01a6"
+        ]
+      },
+      {
+        "fact": "fact_reservations",
+        "name": "Revenue by Channel",
+        "grain": "channel_id, DATE_TRUNC('month', booked_at)",
+        "filter": "status IN ('CONFIRMED', 'CHECKED_OUT')",
+        "format": "decimal(14,2)",
+        "numerator": "SUM(total_amount)",
+        "rationale": "Total booking value attributed to each distribution channel for confirmed and checked-out bookings. Uses reservation total_amount, not folio charges. Uses fact_reservations with status filter. Aggregates by channel and month. Open question on whether CHECKED_IN should also be included and reporting currency.",
+        "denominator": "",
+        "evidence_refs": [
+          "ontology-upload:fc63b28958a292918871",
+          "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.revenue_by_channel",
+          "tech:30e3c1728503a02629e8437ff91a01a6"
+        ]
+      },
+      {
+        "fact": "fact_daily_hotel_performance",
+        "name": "Rooms Unsold",
+        "grain": "hotel_id, DATE_TRUNC('month', business_date)",
+        "filter": "",
+        "format": "integer",
+        "numerator": "SUM(rooms_available - rooms_sold)",
+        "rationale": "Count of available rooms that were not sold. Calculated as rooms_available minus rooms_sold. Uses fact_daily_hotel_performance with derived rooms_unsold measure from Silver Layer. Aggregates by hotel and month.",
+        "denominator": "",
+        "evidence_refs": [
+          "ontology-upload:fc63b28958a292918871",
+          "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.rooms_unsold",
+          "tech:c3b2522fd6daa3e5e0f2403165d22f2e"
+        ]
+      },
+      {
+        "fact": "fact_reviews",
+        "name": "Average Review Score",
+        "grain": "hotel_id, DATE_TRUNC('month', submitted_at)",
+        "filter": "",
+        "format": "decimal(3,2)",
+        "numerator": "AVG(rating)",
+        "rationale": "Mean overall rating score from guest reviews. Calculated from rating attribute in reviews. Uses fact_reviews averaging rating measure. Aggregates by hotel and month.",
+        "denominator": "",
+        "evidence_refs": [
+          "ontology-upload:fc63b28958a292918871",
+          "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.average_review_score",
+          "tech:9ee79e643849a20940c9a1615604f6e8"
+        ]
+      }
+    ],
+    "facts": [
+      {
+        "name": "fact_reservations",
+        "grain": "One row per reservation transaction",
+        "links": [],
+        "measures": [
+          "total_amount",
+          "nights",
+          "adults",
+          "children",
+          "rooms_booked"
+        ],
+        "rationale": "Core transactional fact for reservation lifecycle from booking through stay completion or cancellation. Grain is one row per reservation transaction identified by reservation_id. Includes derived flags is_cancelled, is_realised, and room_nights_booked from Silver Layer. Supports Total Bookings, Cancellation %, Average Stay, Repeat Guest %, No Show %, and Revenue by Channel KPIs.",
+        "attributes": [
+          "confirmation_no",
+          "booked_at",
+          "check_in_date",
+          "check_out_date",
+          "nights",
+          "adults",
+          "children",
+          "rooms_booked",
+          "status",
+          "currency",
+          "is_repeat_guest",
+          "source_system",
+          "ingested_at",
+          "batch_id"
+        ],
+        "natural_key": "reservation_id",
+        "date_columns": [
+          "booked_at",
+          "check_in_date",
+          "check_out_date"
+        ],
+        "source_table": "reservations",
+        "evidence_refs": [
+          "tech:30e3c1728503a02629e8437ff91a01a6"
+        ],
+        "dimension_keys": [
+          {
+            "column": "hotel_id",
+            "to_col": "hotel_id",
+            "dimension": "dim_hotels",
+            "cardinality": "many-to-one"
+          },
+          {
+            "column": "guest_id",
+            "to_col": "guest_id",
+            "dimension": "dim_guests",
+            "cardinality": "many-to-one"
+          },
+          {
+            "column": "channel_id",
+            "to_col": "channel_id",
+            "dimension": "dim_channels",
+            "cardinality": "many-to-one"
+          },
+          {
+            "column": "rate_plan_id",
+            "to_col": "rate_plan_id",
+            "dimension": "dim_rate_plans",
+            "cardinality": "many-to-one"
+          }
+        ]
+      },
+      {
+        "name": "fact_daily_hotel_performance",
+        "grain": "One row per hotel per business day",
+        "links": [],
+        "measures": [
+          "rooms_available",
+          "rooms_sold",
+          "rooms_out_of_order",
+          "room_revenue",
+          "other_revenue"
+        ],
+        "rationale": "Pre-aggregated daily performance snapshot for hotel property. Grain is one row per hotel per business day identified by hotel_id + business_date. Source for Occupancy %, ADR and RevPAR KPIs which must use the same hotel-day performance records per requirement. Includes derived rooms_unsold measure from Silver Layer. Supports Occupancy %, ADR, RevPAR, and Rooms Unsold KPIs.",
+        "attributes": [
+          "business_date",
+          "arrivals",
+          "departures",
+          "source_system",
+          "ingested_at",
+          "batch_id"
+        ],
+        "natural_key": "performance_id",
+        "date_columns": [
+          "business_date"
+        ],
+        "source_table": "daily_hotel_performance",
+        "evidence_refs": [
+          "tech:c3b2522fd6daa3e5e0f2403165d22f2e"
+        ],
+        "dimension_keys": [
+          {
+            "column": "hotel_id",
+            "to_col": "hotel_id",
+            "dimension": "dim_hotels",
+            "cardinality": "many-to-one"
+          }
+        ]
+      },
+      {
+        "name": "fact_folio_charges",
+        "grain": "One row per charge transaction",
+        "links": [],
+        "measures": [
+          "charge_amount"
+        ],
+        "rationale": "Individual charge line item posted to reservation folio. Grain is one row per charge transaction identified by charge_id. Captures all revenue including room charges and ancillary services. Detailed grain for Total Revenue KPI. Supports Total Revenue KPI by summing charge_amount across all charge types.",
+        "attributes": [
+          "charge_date",
+          "charge_type",
+          "description",
+          "currency",
+          "source_system",
+          "ingested_at"
+        ],
+        "natural_key": "charge_id",
+        "date_columns": [
+          "charge_date"
+        ],
+        "source_table": "folio_charges",
+        "evidence_refs": [
+          "tech:41c9bd2e43e0e7051f06227c06dc6ac9"
+        ],
+        "dimension_keys": [
+          {
+            "column": "hotel_id",
+            "to_col": "hotel_id",
+            "dimension": "dim_hotels",
+            "cardinality": "many-to-one"
+          }
+        ]
+      },
+      {
+        "name": "fact_stay_nights",
+        "grain": "One row per room per night of stay",
+        "links": [],
+        "measures": [
+          "room_revenue"
+        ],
+        "rationale": "Individual night of guest occupancy in a specific room. Grain is one row per room per night of stay identified by hotel_id + room_id + stay_date + reservation_id. Finest grain for room revenue and occupancy measurement. Core fact for nightly revenue and occupancy analysis. Provides detailed stay-level data for reconciliation with daily_hotel_performance aggregates.",
+        "attributes": [
+          "stay_date",
+          "is_occupied",
+          "source_system",
+          "ingested_at"
+        ],
+        "natural_key": "stay_night_id",
+        "date_columns": [
+          "stay_date"
+        ],
+        "source_table": "stay_nights",
+        "evidence_refs": [
+          "tech:5ce490a2f1c3df32fd3e7681b7aaffe9"
+        ],
+        "dimension_keys": [
+          {
+            "column": "hotel_id",
+            "to_col": "hotel_id",
+            "dimension": "dim_hotels",
+            "cardinality": "many-to-one"
+          },
+          {
+            "column": "room_id",
+            "to_col": "room_id",
+            "dimension": "dim_rooms",
+            "cardinality": "many-to-one"
+          },
+          {
+            "column": "room_type_id",
+            "to_col": "room_type_id",
+            "dimension": "dim_room_types",
+            "cardinality": "many-to-one"
+          }
+        ]
+      },
+      {
+        "name": "fact_payments",
+        "grain": "One row per payment transaction",
+        "links": [],
+        "measures": [
+          "payment_amount"
+        ],
+        "rationale": "Payment transaction against reservation folio. Grain is one row per payment transaction identified by payment_id. Currently one-to-one with reservations in source data but model supports multiple payments per reservation. Provides payment method and status tracking for financial reconciliation.",
+        "attributes": [
+          "paid_at",
+          "method",
+          "card_last4",
+          "status",
+          "source_system",
+          "ingested_at"
+        ],
+        "natural_key": "payment_id",
+        "date_columns": [
+          "paid_at"
+        ],
+        "source_table": "payments",
+        "evidence_refs": [
+          "tech:2147816313ed823c7d27914ef5da9b5e"
+        ],
+        "dimension_keys": []
+      },
+      {
+        "name": "fact_reviews",
+        "grain": "One row per review submission",
+        "links": [],
+        "measures": [
+          "rating",
+          "cleanliness",
+          "service_score",
+          "value_score"
+        ],
+        "rationale": "Guest satisfaction review submitted after stay. Grain is one row per review submission identified by review_id. Source for Average Review Score KPI. Provides overall rating and component scores for cleanliness, service and value. Supports Average Review Score KPI by averaging rating measure.",
+        "attributes": [
+          "title",
+          "submitted_at",
+          "source_system",
+          "ingested_at"
+        ],
+        "natural_key": "review_id",
+        "date_columns": [
+          "submitted_at"
+        ],
+        "source_table": "reviews",
+        "evidence_refs": [
+          "tech:9ee79e643849a20940c9a1615604f6e8"
+        ],
+        "dimension_keys": [
+          {
+            "column": "hotel_id",
+            "to_col": "hotel_id",
+            "dimension": "dim_hotels",
+            "cardinality": "many-to-one"
+          },
+          {
+            "column": "guest_id",
+            "to_col": "guest_id",
+            "dimension": "dim_guests",
+            "cardinality": "many-to-one"
+          }
+        ]
+      }
+    ],
+    "blockers": [],
+    "dimensions": [
+      {
+        "name": "dim_hotels",
+        "grain": "One row per hotel property",
+        "links": [],
+        "measures": [],
+        "rationale": "Physical hotel property with operational configuration, location and brand attributes. Core dimension for all hotel operations and performance analysis. Grain is one row per hotel property identified by hotel_code. Provides geographic, brand and capacity context for all fact tables.",
+        "attributes": [
+          "hotel_code",
+          "hotel_name",
+          "brand",
+          "city",
+          "country",
+          "star_rating",
+          "total_rooms",
+          "opened_on",
+          "timezone",
+          "source_system",
+          "ingested_at",
+          "batch_id"
+        ],
+        "natural_key": "hotel_id",
+        "date_columns": [
+          "opened_on"
+        ],
+        "source_table": "hotels",
+        "evidence_refs": [
+          "tech:af940e7d2be2bea3256ec0743d678073"
+        ],
+        "dimension_keys": []
+      },
+      {
+        "name": "dim_guests",
+        "grain": "One row per unique guest",
+        "links": [],
+        "measures": [],
+        "rationale": "Individual customer with profile information. Master entity for guest relationship management and repeat guest identification. Grain is one row per unique guest identified by guest_ref. Includes derived guest_age_years from Silver Layer. Provides demographic context for reservation and review analysis.",
+        "attributes": [
+          "guest_ref",
+          "full_name",
+          "email",
+          "phone",
+          "country",
+          "date_of_birth",
+          "created_at",
+          "source_system",
+          "ingested_at"
+        ],
+        "natural_key": "guest_id",
+        "date_columns": [
+          "date_of_birth",
+          "created_at"
+        ],
+        "source_table": "guests",
+        "evidence_refs": [
+          "tech:cd46477ea6a2ac1b1d6b1246648a9f6c"
+        ],
+        "dimension_keys": []
+      },
+      {
+        "name": "dim_channels",
+        "grain": "One row per channel",
+        "links": [],
+        "measures": [],
+        "rationale": "Booking source or distribution channel with commission structure. Defines how reservations are acquired. Grain is one row per channel identified by channel_code. Provides distribution channel context for Revenue by Channel KPI and commission analysis.",
+        "attributes": [
+          "channel_code",
+          "channel_name",
+          "channel_group",
+          "commission_pct",
+          "source_system",
+          "ingested_at"
+        ],
+        "natural_key": "channel_id",
+        "date_columns": [],
+        "source_table": "channels",
+        "evidence_refs": [
+          "tech:d99d1c9209beeba092fc4c1d3270617b"
+        ],
+        "dimension_keys": []
+      },
+      {
+        "name": "dim_market_segments",
+        "grain": "One row per market segment",
+        "links": [],
+        "measures": [],
+        "rationale": "Customer market segmentation category for business analysis and targeting. Grain is one row per market segment identified by segment_code. Provides market segment context for reservation analysis and revenue management.",
+        "attributes": [
+          "segment_code",
+          "segment_name",
+          "source_system",
+          "ingested_at"
+        ],
+        "natural_key": "segment_id",
+        "date_columns": [],
+        "source_table": "market_segments",
+        "evidence_refs": [
+          "tech:ca6b092f7e51ed996cd3d9a016ccc527"
+        ],
+        "dimension_keys": []
+      },
+      {
+        "name": "dim_rate_plans",
+        "grain": "One row per rate plan per hotel",
+        "links": [
+          {
+            "column": "hotel_id",
+            "to_col": "hotel_id",
+            "dimension": "dim_hotels",
+            "cardinality": "many-to-one"
+          }
+        ],
+        "measures": [],
+        "rationale": "Pricing and terms package defining rate structure, meal inclusion and cancellation policy. Pricing dimension for revenue management. Grain is one row per rate plan per hotel identified by hotel_id + rate_plan_code. Provides pricing context for reservation analysis.",
+        "attributes": [
+          "rate_plan_code",
+          "rate_plan_name",
+          "board_type",
+          "is_refundable",
+          "source_system",
+          "ingested_at"
+        ],
+        "natural_key": "rate_plan_id",
+        "date_columns": [],
+        "source_table": "rate_plans",
+        "evidence_refs": [
+          "tech:e25c57e97c8ec065c6603c5028066b3b"
+        ],
+        "dimension_keys": []
+      },
+      {
+        "name": "dim_room_types",
+        "grain": "One row per room type per hotel",
+        "links": [
+          {
+            "column": "hotel_id",
+            "to_col": "hotel_id",
+            "dimension": "dim_hotels",
+            "cardinality": "many-to-one"
+          }
+        ],
+        "measures": [],
+        "rationale": "Room category definition with physical characteristics, capacity and base pricing. Defines room product offering. Grain is one row per room type per hotel identified by hotel_id + room_type_code. Provides room category context for stay night and reservation analysis.",
+        "attributes": [
+          "room_type_code",
+          "room_type_name",
+          "max_occupancy",
+          "base_rate",
+          "source_system",
+          "ingested_at"
+        ],
+        "natural_key": "room_type_id",
+        "date_columns": [],
+        "source_table": "room_types",
+        "evidence_refs": [
+          "tech:f8b32016a182648f3e993337239461ca"
+        ],
+        "dimension_keys": []
+      },
+      {
+        "name": "dim_rooms",
+        "grain": "One row per physical room",
+        "links": [
+          {
+            "column": "hotel_id",
+            "to_col": "hotel_id",
+            "dimension": "dim_hotels",
+            "cardinality": "many-to-one"
+          },
+          {
+            "column": "room_type_id",
+            "to_col": "room_type_id",
+            "dimension": "dim_room_types",
+            "cardinality": "many-to-one"
+          }
+        ],
+        "measures": [],
+        "rationale": "Individual physical room unit within a hotel property. Inventory unit for room assignment and occupancy tracking. Grain is one row per physical room identified by hotel_id + room_number. Provides physical room context for stay night analysis.",
+        "attributes": [
+          "room_number",
+          "floor_no",
+          "is_active",
+          "source_system",
+          "ingested_at"
+        ],
+        "natural_key": "room_id",
+        "date_columns": [],
+        "source_table": "rooms",
+        "evidence_refs": [
+          "tech:c51aedc0423d5cafad5d4291c3a03b30"
+        ],
+        "dimension_keys": []
+      },
+      {
+        "name": "dim_loyalty_members",
+        "grain": "One row per loyalty membership",
+        "links": [],
+        "measures": [],
+        "rationale": "Guest enrolled in loyalty program with tier status and points balance. Subset of guests with loyalty membership. Grain is one row per loyalty membership identified by membership_no. Provides loyalty program context for guest analysis.",
+        "attributes": [
+          "membership_no",
+          "tier",
+          "points_balance",
+          "enrolled_on",
+          "source_system",
+          "ingested_at"
+        ],
+        "natural_key": "loyalty_id",
+        "date_columns": [
+          "enrolled_on"
+        ],
+        "source_table": "loyalty_members",
+        "evidence_refs": [
+          "tech:56a328d53bd52956eaa302d76884a498"
+        ],
+        "dimension_keys": []
+      }
+    ],
+    "exclusions": {
+      "ota_feed_raw": "Raw staging entity requiring transformation to reservation format. Not a reporting fact.",
+      "cancellations": "Cancellation events are represented as attributes and derived flags in fact_reservations. Separate cancellation fact not required for declared KPIs.",
+      "pms_extract_log": "Operational audit trail for PMS data extractions. Not a business fact for KPI reporting.",
+      "batch_load_audit": "Operational audit table for data loading processes. Not a business fact for KPI reporting.",
+      "reservation_rooms": "Bridge entity linking reservation to room assignment. Relationship represented through fact_reservations and fact_stay_nights. Separate bridge not required for declared KPIs.",
+      "housekeeping_tasks": "Operational fact for housekeeping performance tracking. Not required for declared 12 KPIs.",
+      "room_inventory_daily": "Daily room availability snapshot. Inventory measures are present in fact_daily_hotel_performance which is the approved source for Occupancy %, ADR and RevPAR KPIs per requirement."
+    },
+    "fingerprint": "12b9b789c2ecef5c0ac3c998b53247a4d0a837f28e67fb1feabadc5ef293a9be",
+    "kpi_coverage": {
+      "No Show %": "fact_reservations",
+      "Occupancy %": "fact_daily_hotel_performance",
+      "Average Stay": "fact_reservations",
+      "Rooms Unsold": "fact_daily_hotel_performance",
+      "Total Revenue": "fact_folio_charges",
+      "Cancellation %": "fact_reservations",
+      "Repeat Guest %": "fact_reservations",
+      "Total Bookings": "fact_reservations",
+      "Revenue by Channel": "fact_reservations",
+      "Average Review Score": "fact_reviews",
+      "ADR (Average Daily Rate)": "fact_daily_hotel_performance",
+      "RevPAR (Revenue Per Available Room)": "fact_daily_hotel_performance"
+    },
+    "open_questions": [
+      "Currency-valued KPIs remain at source-currency grain because no approved FX source exists.",
+      "Repeat Guest % uses the approved is_repeat_guest business flag; the measured source contradiction remains recorded for remediation."
+    ],
+    "ontology_digest": "ce5ad08dbd0cc697ee4ab140cd14f1c821822354a64892cfc9074c2fed8a46f0"
+  },
+  "stage": "Gold Layer data model approved",
+  "status": "model_approved",
+  "history": [
+    {
+      "event": "Inputs changed; approvals invalidated",
+      "model": null,
+      "revision": "24bff38b-0e52-4d04-ad0a-a7001c5f3978"
+    },
+    {
+      "at": "2026-10-06T17:57:08.694334+00:00",
+      "gate": "silver",
+      "note": "",
+      "actor": "nitishemails@gmail.com",
+      "model": null,
+      "decision": "approved",
+      "revision": "6b380033-c0de-4f3f-87f9-55b704530790"
+    },
+    {
+      "at": "2026-10-06T17:57:37.171989+00:00",
+      "gate": "model",
+      "note": "",
+      "actor": "nitishemails@gmail.com",
+      "model": {
+        "kpis": [
+          {
+            "fact": "fact_reservations",
+            "name": "Total Bookings",
+            "grain": "hotel_id, channel_id, segment_id, DATE_TRUNC('month', booked_at)",
+            "filter": "status != 'CANCELLED'",
+            "format": "integer",
+            "numerator": "COUNT(DISTINCT reservation_id)",
+            "rationale": "Count of reservations excluding cancelled bookings. Core volume metric for reservation activity. Uses fact_reservations with filter to exclude cancelled status. Aggregates by hotel, channel, segment and month.",
+            "denominator": "",
+            "evidence_refs": [
+              "ontology-upload:fc63b28958a292918871",
+              "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.total_bookings",
+              "tech:30e3c1728503a02629e8437ff91a01a6"
+            ]
+          },
+          {
+            "fact": "fact_folio_charges",
+            "name": "Total Revenue",
+            "grain": "hotel_id, charge_type, DATE_TRUNC('month', charge_date)",
+            "filter": "",
+            "format": "decimal(14,2)",
+            "numerator": "SUM(charge_amount)",
+            "rationale": "Sum of all folio charges including room and ancillary revenue. Comprehensive revenue measure across all charge types. Uses fact_folio_charges summing charge_amount. Aggregates by hotel, charge type and month. Currency conversion required per open question.",
+            "denominator": "",
+            "evidence_refs": [
+              "ontology-upload:fc63b28958a292918871",
+              "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.total_revenue",
+              "tech:41c9bd2e43e0e7051f06227c06dc6ac9"
+            ]
+          },
+          {
+            "fact": "fact_daily_hotel_performance",
+            "name": "Occupancy %",
+            "grain": "hotel_id, DATE_TRUNC('month', business_date)",
+            "filter": "rooms_available > 0",
+            "format": "percent",
+            "numerator": "SUM(rooms_sold)",
+            "rationale": "Percentage of available rooms that are occupied. Calculated as rooms_sold / rooms_available from daily hotel performance records. Must use the same hotel-day performance records as ADR and RevPAR per requirement. Uses fact_daily_hotel_performance with denominator guard. Aggregates by hotel and month.",
+            "denominator": "SUM(rooms_available)",
+            "evidence_refs": [
+              "ontology-upload:fc63b28958a292918871",
+              "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.occupancy_pct",
+              "tech:c3b2522fd6daa3e5e0f2403165d22f2e"
+            ]
+          },
+          {
+            "fact": "fact_daily_hotel_performance",
+            "name": "ADR (Average Daily Rate)",
+            "grain": "hotel_id, DATE_TRUNC('month', business_date)",
+            "filter": "rooms_sold > 0",
+            "format": "decimal(14,2)",
+            "numerator": "SUM(room_revenue)",
+            "rationale": "Average revenue per occupied room. Calculated as room_revenue / rooms_sold from daily hotel performance records. Must use the same hotel-day performance records as Occupancy % and RevPAR per requirement. Uses fact_daily_hotel_performance with denominator guard. Aggregates by hotel and month. Currency per open question.",
+            "denominator": "SUM(rooms_sold)",
+            "evidence_refs": [
+              "ontology-upload:fc63b28958a292918871",
+              "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.adr",
+              "tech:c3b2522fd6daa3e5e0f2403165d22f2e"
+            ]
+          },
+          {
+            "fact": "fact_daily_hotel_performance",
+            "name": "RevPAR (Revenue Per Available Room)",
+            "grain": "hotel_id, DATE_TRUNC('month', business_date)",
+            "filter": "rooms_available > 0",
+            "format": "decimal(14,2)",
+            "numerator": "SUM(room_revenue)",
+            "rationale": "Revenue per available room regardless of occupancy. Calculated as room_revenue / rooms_available from daily hotel performance records. Must use the same hotel-day performance records as Occupancy % and ADR per requirement. Uses fact_daily_hotel_performance with denominator guard. Aggregates by hotel and month. Currency per open question.",
+            "denominator": "SUM(rooms_available)",
+            "evidence_refs": [
+              "ontology-upload:fc63b28958a292918871",
+              "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.revpar",
+              "tech:c3b2522fd6daa3e5e0f2403165d22f2e"
+            ]
+          },
+          {
+            "fact": "fact_reservations",
+            "name": "Cancellation %",
+            "grain": "hotel_id, DATE_TRUNC('month', booked_at)",
+            "filter": "",
+            "format": "percent",
+            "numerator": "COUNT(DISTINCT CASE WHEN status = 'CANCELLED' THEN reservation_id END)",
+            "rationale": "Percentage of reservations that were cancelled. Ratio of cancelled reservations to total reservations. Uses fact_reservations with conditional count for numerator. Aggregates by hotel and month.",
+            "denominator": "COUNT(DISTINCT reservation_id)",
+            "evidence_refs": [
+              "ontology-upload:fc63b28958a292918871",
+              "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.cancellation_pct",
+              "tech:30e3c1728503a02629e8437ff91a01a6"
+            ]
+          },
+          {
+            "fact": "fact_reservations",
+            "name": "Average Stay",
+            "grain": "hotel_id, DATE_TRUNC('month', booked_at)",
+            "filter": "status != 'CANCELLED'",
+            "format": "decimal(5,2)",
+            "numerator": "AVG(nights)",
+            "rationale": "Average length of stay in nights for completed reservations. Mean of nights attribute across relevant reservations. Uses fact_reservations with filter to exclude cancelled. Aggregates by hotel and month. Open question on whether to include only CHECKED_OUT or also CONFIRMED and CHECKED_IN.",
+            "denominator": "",
+            "evidence_refs": [
+              "ontology-upload:fc63b28958a292918871",
+              "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.average_stay",
+              "tech:30e3c1728503a02629e8437ff91a01a6"
+            ]
+          },
+          {
+            "fact": "fact_reservations",
+            "name": "Repeat Guest %",
+            "grain": "hotel_id, DATE_TRUNC('month', booked_at)",
+            "filter": "",
+            "format": "percent",
+            "numerator": "COUNT(DISTINCT CASE WHEN is_repeat_guest = 1 THEN reservation_id END)",
+            "rationale": "Percentage of reservations made by guests with prior stays. Calculated from is_repeat_guest flag on reservations. Uses fact_reservations with conditional count for numerator. Aggregates by hotel and month. Open question on how is_repeat_guest is determined.",
+            "denominator": "COUNT(DISTINCT reservation_id)",
+            "evidence_refs": [
+              "ontology-upload:fc63b28958a292918871",
+              "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.repeat_guest_pct",
+              "tech:30e3c1728503a02629e8437ff91a01a6"
+            ]
+          },
+          {
+            "fact": "fact_reservations",
+            "name": "No Show %",
+            "grain": "hotel_id, DATE_TRUNC('month', booked_at)",
+            "filter": "",
+            "format": "percent",
+            "numerator": "COUNT(DISTINCT CASE WHEN UPPER(REGEXP_REPLACE(status, '[^A-Z0-9]', '')) IN ('NS','NOSHOW') THEN reservation_id END)",
+            "rationale": "No-show uses the measured NS and NOSHOW-normalized reservation statuses; the denominator is all reservations at the reviewed grain.",
+            "denominator": "COUNT(DISTINCT reservation_id)",
+            "evidence_refs": [
+              "ontology-upload:fc63b28958a292918871",
+              "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.no_show_pct",
+              "tech:30e3c1728503a02629e8437ff91a01a6"
+            ]
+          },
+          {
+            "fact": "fact_reservations",
+            "name": "Revenue by Channel",
+            "grain": "channel_id, DATE_TRUNC('month', booked_at)",
+            "filter": "status IN ('CONFIRMED', 'CHECKED_OUT')",
+            "format": "decimal(14,2)",
+            "numerator": "SUM(total_amount)",
+            "rationale": "Total booking value attributed to each distribution channel for confirmed and checked-out bookings. Uses reservation total_amount, not folio charges. Uses fact_reservations with status filter. Aggregates by channel and month. Open question on whether CHECKED_IN should also be included and reporting currency.",
+            "denominator": "",
+            "evidence_refs": [
+              "ontology-upload:fc63b28958a292918871",
+              "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.revenue_by_channel",
+              "tech:30e3c1728503a02629e8437ff91a01a6"
+            ]
+          },
+          {
+            "fact": "fact_daily_hotel_performance",
+            "name": "Rooms Unsold",
+            "grain": "hotel_id, DATE_TRUNC('month', business_date)",
+            "filter": "",
+            "format": "integer",
+            "numerator": "SUM(rooms_available - rooms_sold)",
+            "rationale": "Count of available rooms that were not sold. Calculated as rooms_available minus rooms_sold. Uses fact_daily_hotel_performance with derived rooms_unsold measure from Silver Layer. Aggregates by hotel and month.",
+            "denominator": "",
+            "evidence_refs": [
+              "ontology-upload:fc63b28958a292918871",
+              "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.rooms_unsold",
+              "tech:c3b2522fd6daa3e5e0f2403165d22f2e"
+            ]
+          },
+          {
+            "fact": "fact_reviews",
+            "name": "Average Review Score",
+            "grain": "hotel_id, DATE_TRUNC('month', submitted_at)",
+            "filter": "",
+            "format": "decimal(3,2)",
+            "numerator": "AVG(rating)",
+            "rationale": "Mean overall rating score from guest reviews. Calculated from rating attribute in reviews. Uses fact_reviews averaging rating measure. Aggregates by hotel and month.",
+            "denominator": "",
+            "evidence_refs": [
+              "ontology-upload:fc63b28958a292918871",
+              "ontology:2433e4fc-786a-4457-b328-ce2fc65b10fb:kpi.average_review_score",
+              "tech:9ee79e643849a20940c9a1615604f6e8"
+            ]
+          }
+        ],
+        "facts": [
+          {
+            "name": "fact_reservations",
+            "grain": "One row per reservation transaction",
+            "links": [],
+            "measures": [
+              "total_amount",
+              "nights",
+              "adults",
+              "children",
+              "rooms_booked"
+            ],
+            "rationale": "Core transactional fact for reservation lifecycle from booking through stay completion or cancellation. Grain is one row per reservation transaction identified by reservation_id. Includes derived flags is_cancelled, is_realised, and room_nights_booked from Silver Layer. Supports Total Bookings, Cancellation %, Average Stay, Repeat Guest %, No Show %, and Revenue by Channel KPIs.",
+            "attributes": [
+              "confirmation_no",
+              "booked_at",
+              "check_in_date",
+              "check_out_date",
+              "nights",
+              "adults",
+              "children",
+              "rooms_booked",
+              "status",
+              "currency",
+              "is_repeat_guest",
+              "source_system",
+              "ingested_at",
+              "batch_id"
+            ],
+            "natural_key": "reservation_id",
+            "date_columns": [
+              "booked_at",
+              "check_in_date",
+              "check_out_date"
+            ],
+            "source_table": "reservations",
+            "evidence_refs": [
+              "tech:30e3c1728503a02629e8437ff91a01a6"
+            ],
+            "dimension_keys": [
+              {
+                "column": "hotel_id",
+                "to_col": "hotel_id",
+                "dimension": "dim_hotels",
+                "cardinality": "many-to-one"
+              },
+              {
+                "column": "guest_id",
+                "to_col": "guest_id",
+                "dimension": "dim_guests",
+                "cardinality": "many-to-one"
+              },
+              {
+                "column": "channel_id",
+                "to_col": "channel_id",
+                "dimension": "dim_channels",
+                "cardinality": "many-to-one"
+              },
+              {
+                "column": "rate_plan_id",
+                "to_col": "rate_plan_id",
+                "dimension": "dim_rate_plans",
+                "cardinality": "many-to-one"
+              }
+            ]
+          },
+          {
+            "name": "fact_daily_hotel_performance",
+            "grain": "One row per hotel per business day",
+            "links": [],
+            "measures": [
+              "rooms_available",
+              "rooms_sold",
+              "rooms_out_of_order",
+              "room_revenue",
+              "other_revenue"
+            ],
+            "rationale": "Pre-aggregated daily performance snapshot for hotel property. Grain is one row per hotel per business day identified by hotel_id + business_date. Source for Occupancy %, ADR and RevPAR KPIs which must use the same hotel-day performance records per requirement. Includes derived rooms_unsold measure from Silver Layer. Supports Occupancy %, ADR, RevPAR, and Rooms Unsold KPIs.",
+            "attributes": [
+              "business_date",
+              "arrivals",
+              "departures",
+              "source_system",
+              "ingested_at",
+              "batch_id"
+            ],
+            "natural_key": "performance_id",
+            "date_columns": [
+              "business_date"
+            ],
+            "source_table": "daily_hotel_performance",
+            "evidence_refs": [
+              "tech:c3b2522fd6daa3e5e0f2403165d22f2e"
+            ],
+            "dimension_keys": [
+              {
+                "column": "hotel_id",
+                "to_col": "hotel_id",
+                "dimension": "dim_hotels",
+                "cardinality": "many-to-one"
+              }
+            ]
+          },
+          {
+            "name": "fact_folio_charges",
+            "grain": "One row per charge transaction",
+            "links": [],
+            "measures": [
+              "charge_amount"
+            ],
+            "rationale": "Individual charge line item posted to reservation folio. Grain is one row per charge transaction identified by charge_id. Captures all revenue including room charges and ancillary services. Detailed grain for Total Revenue KPI. Supports Total Revenue KPI by summing charge_amount across all charge types.",
+            "attributes": [
+              "charge_date",
+              "charge_type",
+              "description",
+              "currency",
+              "source_system",
+              "ingested_at"
+            ],
+            "natural_key": "charge_id",
+            "date_columns": [
+              "charge_date"
+            ],
+            "source_table": "folio_charges",
+            "evidence_refs": [
+              "tech:41c9bd2e43e0e7051f06227c06dc6ac9"
+            ],
+            "dimension_keys": [
+              {
+                "column": "hotel_id",
+                "to_col": "hotel_id",
+                "dimension": "dim_hotels",
+                "cardinality": "many-to-one"
+              }
+            ]
+          },
+          {
+            "name": "fact_stay_nights",
+            "grain": "One row per room per night of stay",
+            "links": [],
+            "measures": [
+              "room_revenue"
+            ],
+            "rationale": "Individual night of guest occupancy in a specific room. Grain is one row per room per night of stay identified by hotel_id + room_id + stay_date + reservation_id. Finest grain for room revenue and occupancy measurement. Core fact for nightly revenue and occupancy analysis. Provides detailed stay-level data for reconciliation with daily_hotel_performance aggregates.",
+            "attributes": [
+              "stay_date",
+              "is_occupied",
+              "source_system",
+              "ingested_at"
+            ],
+            "natural_key": "stay_night_id",
+            "date_columns": [
+              "stay_date"
+            ],
+            "source_table": "stay_nights",
+            "evidence_refs": [
+              "tech:5ce490a2f1c3df32fd3e7681b7aaffe9"
+            ],
+            "dimension_keys": [
+              {
+                "column": "hotel_id",
+                "to_col": "hotel_id",
+                "dimension": "dim_hotels",
+                "cardinality": "many-to-one"
+              },
+              {
+                "column": "room_id",
+                "to_col": "room_id",
+                "dimension": "dim_rooms",
+                "cardinality": "many-to-one"
+              },
+              {
+                "column": "room_type_id",
+                "to_col": "room_type_id",
+                "dimension": "dim_room_types",
+                "cardinality": "many-to-one"
+              }
+            ]
+          },
+          {
+            "name": "fact_payments",
+            "grain": "One row per payment transaction",
+            "links": [],
+            "measures": [
+              "payment_amount"
+            ],
+            "rationale": "Payment transaction against reservation folio. Grain is one row per payment transaction identified by payment_id. Currently one-to-one with reservations in source data but model supports multiple payments per reservation. Provides payment method and status tracking for financial reconciliation.",
+            "attributes": [
+              "paid_at",
+              "method",
+              "card_last4",
+              "status",
+              "source_system",
+              "ingested_at"
+            ],
+            "natural_key": "payment_id",
+            "date_columns": [
+              "paid_at"
+            ],
+            "source_table": "payments",
+            "evidence_refs": [
+              "tech:2147816313ed823c7d27914ef5da9b5e"
+            ],
+            "dimension_keys": []
+          },
+          {
+            "name": "fact_reviews",
+            "grain": "One row per review submission",
+            "links": [],
+            "measures": [
+              "rating",
+              "cleanliness",
+              "service_score",
+              "value_score"
+            ],
+            "rationale": "Guest satisfaction review submitted after stay. Grain is one row per review submission identified by review_id. Source for Average Review Score KPI. Provides overall rating and component scores for cleanliness, service and value. Supports Average Review Score KPI by averaging rating measure.",
+            "attributes": [
+              "title",
+              "submitted_at",
+              "source_system",
+              "ingested_at"
+            ],
+            "natural_key": "review_id",
+            "date_columns": [
+              "submitted_at"
+            ],
+            "source_table": "reviews",
+            "evidence_refs": [
+              "tech:9ee79e643849a20940c9a1615604f6e8"
+            ],
+            "dimension_keys": [
+              {
+                "column": "hotel_id",
+                "to_col": "hotel_id",
+                "dimension": "dim_hotels",
+                "cardinality": "many-to-one"
+              },
+              {
+                "column": "guest_id",
+                "to_col": "guest_id",
+                "dimension": "dim_guests",
+                "cardinality": "many-to-one"
+              }
+            ]
+          }
+        ],
+        "blockers": [],
+        "dimensions": [
+          {
+            "name": "dim_hotels",
+            "grain": "One row per hotel property",
+            "links": [],
+            "measures": [],
+            "rationale": "Physical hotel property with operational configuration, location and brand attributes. Core dimension for all hotel operations and performance analysis. Grain is one row per hotel property identified by hotel_code. Provides geographic, brand and capacity context for all fact tables.",
+            "attributes": [
+              "hotel_code",
+              "hotel_name",
+              "brand",
+              "city",
+              "country",
+              "star_rating",
+              "total_rooms",
+              "opened_on",
+              "timezone",
+              "source_system",
+              "ingested_at",
+              "batch_id"
+            ],
+            "natural_key": "hotel_id",
+            "date_columns": [
+              "opened_on"
+            ],
+            "source_table": "hotels",
+            "evidence_refs": [
+              "tech:af940e7d2be2bea3256ec0743d678073"
+            ],
+            "dimension_keys": []
+          },
+          {
+            "name": "dim_guests",
+            "grain": "One row per unique guest",
+            "links": [],
+            "measures": [],
+            "rationale": "Individual customer with profile information. Master entity for guest relationship management and repeat guest identification. Grain is one row per unique guest identified by guest_ref. Includes derived guest_age_years from Silver Layer. Provides demographic context for reservation and review analysis.",
+            "attributes": [
+              "guest_ref",
+              "full_name",
+              "email",
+              "phone",
+              "country",
+              "date_of_birth",
+              "created_at",
+              "source_system",
+              "ingested_at"
+            ],
+            "natural_key": "guest_id",
+            "date_columns": [
+              "date_of_birth",
+              "created_at"
+            ],
+            "source_table": "guests",
+            "evidence_refs": [
+              "tech:cd46477ea6a2ac1b1d6b1246648a9f6c"
+            ],
+            "dimension_keys": []
+          },
+          {
+            "name": "dim_channels",
+            "grain": "One row per channel",
+            "links": [],
+            "measures": [],
+            "rationale": "Booking source or distribution channel with commission structure. Defines how reservations are acquired. Grain is one row per channel identified by channel_code. Provides distribution channel context for Revenue by Channel KPI and commission analysis.",
+            "attributes": [
+              "channel_code",
+              "channel_name",
+              "channel_group",
+              "commission_pct",
+              "source_system",
+              "ingested_at"
+            ],
+            "natural_key": "channel_id",
+            "date_columns": [],
+            "source_table": "channels",
+            "evidence_refs": [
+              "tech:d99d1c9209beeba092fc4c1d3270617b"
+            ],
+            "dimension_keys": []
+          },
+          {
+            "name": "dim_market_segments",
+            "grain": "One row per market segment",
+            "links": [],
+            "measures": [],
+            "rationale": "Customer market segmentation category for business analysis and targeting. Grain is one row per market segment identified by segment_code. Provides market segment context for reservation analysis and revenue management.",
+            "attributes": [
+              "segment_code",
+              "segment_name",
+              "source_system",
+              "ingested_at"
+            ],
+            "natural_key": "segment_id",
+            "date_columns": [],
+            "source_table": "market_segments",
+            "evidence_refs": [
+              "tech:ca6b092f7e51ed996cd3d9a016ccc527"
+            ],
+            "dimension_keys": []
+          },
+          {
+            "name": "dim_rate_plans",
+            "grain": "One row per rate plan per hotel",
+            "links": [
+              {
+                "column": "hotel_id",
+                "to_col": "hotel_id",
+                "dimension": "dim_hotels",
+                "cardinality": "many-to-one"
+              }
+            ],
+            "measures": [],
+            "rationale": "Pricing and terms package defining rate structure, meal inclusion and cancellation policy. Pricing dimension for revenue management. Grain is one row per rate plan per hotel identified by hotel_id + rate_plan_code. Provides pricing context for reservation analysis.",
+            "attributes": [
+              "rate_plan_code",
+              "rate_plan_name",
+              "board_type",
+              "is_refundable",
+              "source_system",
+              "ingested_at"
+            ],
+            "natural_key": "rate_plan_id",
+            "date_columns": [],
+            "source_table": "rate_plans",
+            "evidence_refs": [
+              "tech:e25c57e97c8ec065c6603c5028066b3b"
+            ],
+            "dimension_keys": []
+          },
+          {
+            "name": "dim_room_types",
+            "grain": "One row per room type per hotel",
+            "links": [
+              {
+                "column": "hotel_id",
+                "to_col": "hotel_id",
+                "dimension": "dim_hotels",
+                "cardinality": "many-to-one"
+              }
+            ],
+            "measures": [],
+            "rationale": "Room category definition with physical characteristics, capacity and base pricing. Defines room product offering. Grain is one row per room type per hotel identified by hotel_id + room_type_code. Provides room category context for stay night and reservation analysis.",
+            "attributes": [
+              "room_type_code",
+              "room_type_name",
+              "max_occupancy",
+              "base_rate",
+              "source_system",
+              "ingested_at"
+            ],
+            "natural_key": "room_type_id",
+            "date_columns": [],
+            "source_table": "room_types",
+            "evidence_refs": [
+              "tech:f8b32016a182648f3e993337239461ca"
+            ],
+            "dimension_keys": []
+          },
+          {
+            "name": "dim_rooms",
+            "grain": "One row per physical room",
+            "links": [
+              {
+                "column": "hotel_id",
+                "to_col": "hotel_id",
+                "dimension": "dim_hotels",
+                "cardinality": "many-to-one"
+              },
+              {
+                "column": "room_type_id",
+                "to_col": "room_type_id",
+                "dimension": "dim_room_types",
+                "cardinality": "many-to-one"
+              }
+            ],
+            "measures": [],
+            "rationale": "Individual physical room unit within a hotel property. Inventory unit for room assignment and occupancy tracking. Grain is one row per physical room identified by hotel_id + room_number. Provides physical room context for stay night analysis.",
+            "attributes": [
+              "room_number",
+              "floor_no",
+              "is_active",
+              "source_system",
+              "ingested_at"
+            ],
+            "natural_key": "room_id",
+            "date_columns": [],
+            "source_table": "rooms",
+            "evidence_refs": [
+              "tech:c51aedc0423d5cafad5d4291c3a03b30"
+            ],
+            "dimension_keys": []
+          },
+          {
+            "name": "dim_loyalty_members",
+            "grain": "One row per loyalty membership",
+            "links": [],
+            "measures": [],
+            "rationale": "Guest enrolled in loyalty program with tier status and points balance. Subset of guests with loyalty membership. Grain is one row per loyalty membership identified by membership_no. Provides loyalty program context for guest analysis.",
+            "attributes": [
+              "membership_no",
+              "tier",
+              "points_balance",
+              "enrolled_on",
+              "source_system",
+              "ingested_at"
+            ],
+            "natural_key": "loyalty_id",
+            "date_columns": [
+              "enrolled_on"
+            ],
+            "source_table": "loyalty_members",
+            "evidence_refs": [
+              "tech:56a328d53bd52956eaa302d76884a498"
+            ],
+            "dimension_keys": []
+          }
+        ],
+        "exclusions": {
+          "ota_feed_raw": "Raw staging entity requiring transformation to reservation format. Not a reporting fact.",
+          "cancellations": "Cancellation events are represented as attributes and derived flags in fact_reservations. Separate cancellation fact not required for declared KPIs.",
+          "pms_extract_log": "Operational audit trail for PMS data extractions. Not a business fact for KPI reporting.",
+          "batch_load_audit": "Operational audit table for data loading processes. Not a business fact for KPI reporting.",
+          "reservation_rooms": "Bridge entity linking reservation to room assignment. Relationship represented through fact_reservations and fact_stay_nights. Separate bridge not required for declared KPIs.",
+          "housekeeping_tasks": "Operational fact for housekeeping performance tracking. Not required for declared 12 KPIs.",
+          "room_inventory_daily": "Daily room availability snapshot. Inventory measures are present in fact_daily_hotel_performance which is the approved source for Occupancy %, ADR and RevPAR KPIs per requirement."
+        },
+        "fingerprint": "12b9b789c2ecef5c0ac3c998b53247a4d0a837f28e67fb1feabadc5ef293a9be",
+        "kpi_coverage": {
+          "No Show %": "fact_reservations",
+          "Occupancy %": "fact_daily_hotel_performance",
+          "Average Stay": "fact_reservations",
+          "Rooms Unsold": "fact_daily_hotel_performance",
+          "Total Revenue": "fact_folio_charges",
+          "Cancellation %": "fact_reservations",
+          "Repeat Guest %": "fact_reservations",
+          "Total Bookings": "fact_reservations",
+          "Revenue by Channel": "fact_reservations",
+          "Average Review Score": "fact_reviews",
+          "ADR (Average Daily Rate)": "fact_daily_hotel_performance",
+          "RevPAR (Revenue Per Available Room)": "fact_daily_hotel_performance"
+        },
+        "open_questions": [
+          "Currency-valued KPIs remain at source-currency grain because no approved FX source exists.",
+          "Repeat Guest % uses the approved is_repeat_guest business flag; the measured source contradiction remains recorded for remediation."
+        ],
+        "ontology_digest": "ce5ad08dbd0cc697ee4ab140cd14f1c821822354a64892cfc9074c2fed8a46f0"
+      },
+      "decision": "approved",
+      "revision": "6b380033-c0de-4f3f-87f9-55b704530790"
+    }
+  ],
+  "prepared": {
+    "root": "/app/workspaces/.gencrew_modeling/e44b8c47-71fc-418a-9d70-b4dc496e9fe2/2433e4fc-786a-4457-b328-ce2fc65b10fb/6b380033-c0de-4f3f-87f9-55b704530790/gencrew-transformation-dbt",
+    "files": [
+      "models/business/business_batch_load_audit.sql",
+      "models/business/business_cancellations.sql",
+      "models/business/business_channels.sql",
+      "models/business/business_daily_hotel_performance.sql",
+      "models/business/business_folio_charges.sql",
+      "models/business/business_guests.sql",
+      "models/business/business_hotels.sql",
+      "models/business/business_housekeeping_tasks.sql",
+      "models/business/business_loyalty_members.sql",
+      "models/business/business_market_segments.sql",
+      "models/business/business_ota_feed_raw.sql",
+      "models/business/business_payments.sql",
+      "models/business/business_pms_extract_log.sql",
+      "models/business/business_rate_plans.sql",
+      "models/business/business_reservation_rooms.sql",
+      "models/business/business_reservations.sql",
+      "models/business/business_reviews.sql",
+      "models/business/business_room_inventory_daily.sql",
+      "models/business/business_room_types.sql",
+      "models/business/business_rooms.sql",
+      "models/business/business_stay_nights.sql"
+    ],
+    "layers": {
+      "kpi": "kpi",
+      "source": "raw",
+      "ordered": [
+        "raw",
+        "business",
+        "reporting",
+        "kpi"
+      ],
+      "business": "business",
+      "cleansed": "business",
+      "reporting": "reporting"
+    },
+    "models": {
+      "kpis": 0,
+      "facts": 0,
+      "business": 0,
+      "cleansed": 21,
+      "dimensions": 0
+    },
+    "manifest": [
+      {
+        "sql": "{{ config(\n    materialized='incremental',\n    unique_key='audit_id',\n    incremental_strategy='merge',\n    on_schema_change='append_new_columns'\n) }}\n-- Business: cleansed and standardised batch_load_audit.\n-- Incremental: only rows with load_started_at beyond the last run's high-water mark are\n-- read; they MERGE on audit_id. Nothing is deleted or truncated.\nwith source as (\n\n    select * from {{ source('raw', 'batch_load_audit') }}\n    {% if is_incremental() %} where load_started_at > (select coalesce(max(load_started_at), '1900-01-01'::timestamp) from {{ this }}) {% endif %}\n\n)\n\nselect\n        audit_id,\n        batch_id,\n        target_table,\n        load_started_at,\n        load_finished_at,\n        rows_loaded,\n        rows_rejected,\n        status,\n        source_system\nfrom source\n",
+        "kind": "model",
+        "name": "business_batch_load_audit",
+        "layer": "business",
+        "columns": [
+          "audit_id",
+          "batch_id",
+          "target_table",
+          "load_started_at",
+          "load_finished_at",
+          "rows_loaded",
+          "rows_rejected",
+          "status",
+          "source_system"
+        ],
+        "watermark": "load_started_at",
+        "unique_key": "audit_id",
+        "source_table": "batch_load_audit"
+      },
+      {
+        "sql": "{{ config(\n    materialized='incremental',\n    unique_key='cancellation_id',\n    incremental_strategy='merge',\n    on_schema_change='append_new_columns'\n) }}\n-- Business: cleansed and standardised cancellations.\n-- Incremental: only rows with cancelled_at beyond the last run's high-water mark are\n-- read; they MERGE on cancellation_id. Nothing is deleted or truncated.\nwith source as (\n\n    select * from {{ source('raw', 'cancellations') }}\n    {% if is_incremental() %} where cancelled_at > (select coalesce(max(cancelled_at), '1900-01-01'::timestamp) from {{ this }}) {% endif %}\n\n)\n\nselect\n        cancellation_id,\n        reservation_id,\n        cancelled_at,\n        reason_code,\n        cancelled_by,\n        source_system,\n        ingested_at,\n        penalty_amount\nfrom source\n",
+        "kind": "model",
+        "name": "business_cancellations",
+        "layer": "business",
+        "columns": [
+          "cancellation_id",
+          "reservation_id",
+          "cancelled_at",
+          "reason_code",
+          "cancelled_by",
+          "source_system",
+          "ingested_at",
+          "penalty_amount"
+        ],
+        "watermark": "cancelled_at",
+        "unique_key": "cancellation_id",
+        "source_table": "cancellations"
+      },
+      {
+        "sql": "{{ config(\n    materialized='incremental',\n    unique_key='channel_id',\n    incremental_strategy='merge',\n    on_schema_change='append_new_columns'\n) }}\n-- Business: cleansed and standardised channels.\n-- Incremental: only rows with ingested_at beyond the last run's high-water mark are\n-- read; they MERGE on channel_id. Nothing is deleted or truncated.\nwith source as (\n\n    select * from {{ source('raw', 'channels') }}\n    {% if is_incremental() %} where ingested_at > (select coalesce(max(ingested_at), '1900-01-01'::timestamp) from {{ this }}) {% endif %}\n\n)\n\nselect\n        channel_name,\n        channel_id,\n        channel_code,\n        channel_group,\n        commission_pct,\n        source_system,\n        ingested_at\nfrom source\n",
+        "kind": "model",
+        "name": "business_channels",
+        "layer": "business",
+        "columns": [
+          "channel_name",
+          "channel_id",
+          "channel_code",
+          "channel_group",
+          "commission_pct",
+          "source_system",
+          "ingested_at"
+        ],
+        "watermark": "ingested_at",
+        "unique_key": "channel_id",
+        "source_table": "channels"
+      },
+      {
+        "sql": "{{ config(\n    materialized='incremental',\n    unique_key='performance_id',\n    incremental_strategy='merge',\n    on_schema_change='append_new_columns'\n) }}\n-- Business: cleansed and standardised daily_hotel_performance.\n-- Incremental: only rows with ingested_at beyond the last run's high-water mark are\n-- read; they MERGE on performance_id. Nothing is deleted or truncated.\nwith source as (\n\n    select * from {{ source('raw', 'daily_hotel_performance') }}\n    where not (NOT (rooms_available > 0))\n      and not (NOT (rooms_sold > 0))\n      and not (NOT (rooms_available > 0))\n      {% if is_incremental() %} and ingested_at > (select coalesce(max(ingested_at), '1900-01-01'::timestamp) from {{ this }}) {% endif %}\n\n)\n\nselect\n        performance_id,\n        hotel_id,\n        business_date,\n        rooms_available,\n        rooms_sold,\n        rooms_out_of_order,\n        arrivals,\n        departures,\n        source_system,\n        ingested_at,\n        batch_id,\n        other_revenue,\n        room_revenue,\n        rooms_available - rooms_sold AS rooms_unsold\nfrom source\n",
+        "kind": "model",
+        "name": "business_daily_hotel_performance",
+        "layer": "business",
+        "columns": [
+          "performance_id",
+          "hotel_id",
+          "business_date",
+          "rooms_available",
+          "rooms_sold",
+          "rooms_out_of_order",
+          "arrivals",
+          "departures",
+          "source_system",
+          "ingested_at",
+          "batch_id",
+          "other_revenue",
+          "room_revenue",
+          "rooms_unsold"
+        ],
+        "watermark": "ingested_at",
+        "unique_key": "performance_id",
+        "source_table": "daily_hotel_performance"
+      },
+      {
+        "sql": "{{ config(\n    materialized='incremental',\n    unique_key='charge_id',\n    incremental_strategy='merge',\n    on_schema_change='append_new_columns'\n) }}\n-- Business: cleansed and standardised folio_charges.\n-- Incremental: only rows with ingested_at beyond the last run's high-water mark are\n-- read; they MERGE on charge_id. Nothing is deleted or truncated.\nwith source as (\n\n    select * from {{ source('raw', 'folio_charges') }}\n    {% if is_incremental() %} where ingested_at > (select coalesce(max(ingested_at), '1900-01-01'::timestamp) from {{ this }}) {% endif %}\n\n)\n\nselect\n        charge_type,\n        charge_id,\n        reservation_id,\n        hotel_id,\n        charge_date,\n        description,\n        currency,\n        source_system,\n        ingested_at,\n        charge_amount\nfrom source\n",
+        "kind": "model",
+        "name": "business_folio_charges",
+        "layer": "business",
+        "columns": [
+          "charge_type",
+          "charge_id",
+          "reservation_id",
+          "hotel_id",
+          "charge_date",
+          "description",
+          "currency",
+          "source_system",
+          "ingested_at",
+          "charge_amount"
+        ],
+        "watermark": "ingested_at",
+        "unique_key": "charge_id",
+        "source_table": "folio_charges"
+      },
+      {
+        "sql": "{{ config(\n    materialized='incremental',\n    unique_key='guest_id',\n    incremental_strategy='merge',\n    on_schema_change='append_new_columns'\n) }}\n-- Business: cleansed and standardised guests.\n-- Incremental: only rows with created_at beyond the last run's high-water mark are\n-- read; they MERGE on guest_id. Nothing is deleted or truncated.\nwith source as (\n\n    select * from {{ source('raw', 'guests') }}\n    {% if is_incremental() %} where created_at > (select coalesce(max(created_at), '1900-01-01'::timestamp) from {{ this }}) {% endif %}\n\n)\n\nselect\n        guest_id,\n        guest_ref,\n        REGEXP_REPLACE(full_name, '[A-Za-z0-9]', 'x', 3, 0) AS full_name,\n        REGEXP_REPLACE(COALESCE(email, ''), '[A-Za-z0-9]', 'x', 3, 0) AS email,\n        REGEXP_REPLACE(COALESCE(phone, ''), '[A-Za-z0-9]', 'x', 3, 0) AS phone,\n        country,\n        DATE_TRUNC('year', date_of_birth) AS date_of_birth,\n        created_at,\n        source_system,\n        ingested_at,\n        DATEDIFF('year', date_of_birth, CURRENT_DATE()) AS guest_age_years\nfrom source\n",
+        "kind": "model",
+        "name": "business_guests",
+        "layer": "business",
+        "columns": [
+          "guest_id",
+          "guest_ref",
+          "full_name",
+          "email",
+          "phone",
+          "country",
+          "date_of_birth",
+          "created_at",
+          "source_system",
+          "ingested_at",
+          "guest_age_years"
+        ],
+        "watermark": "created_at",
+        "unique_key": "guest_id",
+        "source_table": "guests"
+      },
+      {
+        "sql": "{{ config(\n    materialized='incremental',\n    unique_key='hotel_id',\n    incremental_strategy='merge',\n    on_schema_change='append_new_columns'\n) }}\n-- Business: cleansed and standardised hotels.\n-- Incremental: only rows with ingested_at beyond the last run's high-water mark are\n-- read; they MERGE on hotel_id. Nothing is deleted or truncated.\nwith source as (\n\n    select * from {{ source('raw', 'hotels') }}\n    {% if is_incremental() %} where ingested_at > (select coalesce(max(ingested_at), '1900-01-01'::timestamp) from {{ this }}) {% endif %}\n\n)\n\nselect\n        hotel_id,\n        hotel_code,\n        hotel_name,\n        star_rating,\n        total_rooms,\n        city,\n        country,\n        brand,\n        opened_on,\n        timezone,\n        source_system,\n        ingested_at,\n        batch_id\nfrom source\n",
+        "kind": "model",
+        "name": "business_hotels",
+        "layer": "business",
+        "columns": [
+          "hotel_id",
+          "hotel_code",
+          "hotel_name",
+          "star_rating",
+          "total_rooms",
+          "city",
+          "country",
+          "brand",
+          "opened_on",
+          "timezone",
+          "source_system",
+          "ingested_at",
+          "batch_id"
+        ],
+        "watermark": "ingested_at",
+        "unique_key": "hotel_id",
+        "source_table": "hotels"
+      },
+      {
+        "sql": "{{ config(\n    materialized='incremental',\n    unique_key='task_id',\n    incremental_strategy='merge',\n    on_schema_change='append_new_columns'\n) }}\n-- Business: cleansed and standardised housekeeping_tasks.\n-- Incremental: only rows with ingested_at beyond the last run's high-water mark are\n-- read; they MERGE on task_id. Nothing is deleted or truncated.\nwith source as (\n\n    select * from {{ source('raw', 'housekeeping_tasks') }}\n    {% if is_incremental() %} where ingested_at > (select coalesce(max(ingested_at), '1900-01-01'::timestamp) from {{ this }}) {% endif %}\n\n)\n\nselect\n        task_id,\n        hotel_id,\n        room_id,\n        task_date,\n        task_type,\n        status,\n        minutes_taken,\n        source_system,\n        ingested_at\nfrom source\n",
+        "kind": "model",
+        "name": "business_housekeeping_tasks",
+        "layer": "business",
+        "columns": [
+          "task_id",
+          "hotel_id",
+          "room_id",
+          "task_date",
+          "task_type",
+          "status",
+          "minutes_taken",
+          "source_system",
+          "ingested_at"
+        ],
+        "watermark": "ingested_at",
+        "unique_key": "task_id",
+        "source_table": "housekeeping_tasks"
+      },
+      {
+        "sql": "{{ config(\n    materialized='incremental',\n    unique_key='loyalty_id',\n    incremental_strategy='merge',\n    on_schema_change='append_new_columns'\n) }}\n-- Business: cleansed and standardised loyalty_members.\n-- Incremental: only rows with ingested_at beyond the last run's high-water mark are\n-- read; they MERGE on loyalty_id. Nothing is deleted or truncated.\nwith source as (\n\n    select * from {{ source('raw', 'loyalty_members') }}\n    {% if is_incremental() %} where ingested_at > (select coalesce(max(ingested_at), '1900-01-01'::timestamp) from {{ this }}) {% endif %}\n\n)\n\nselect\n        tier,\n        loyalty_id,\n        guest_id,\n        membership_no,\n        points_balance,\n        enrolled_on,\n        source_system,\n        ingested_at\nfrom source\n",
+        "kind": "model",
+        "name": "business_loyalty_members",
+        "layer": "business",
+        "columns": [
+          "tier",
+          "loyalty_id",
+          "guest_id",
+          "membership_no",
+          "points_balance",
+          "enrolled_on",
+          "source_system",
+          "ingested_at"
+        ],
+        "watermark": "ingested_at",
+        "unique_key": "loyalty_id",
+        "source_table": "loyalty_members"
+      },
+      {
+        "sql": "{{ config(\n    materialized='incremental',\n    unique_key='segment_id',\n    incremental_strategy='merge',\n    on_schema_change='append_new_columns'\n) }}\n-- Business: cleansed and standardised market_segments.\n-- Incremental: only rows with ingested_at beyond the last run's high-water mark are\n-- read; they MERGE on segment_id. Nothing is deleted or truncated.\nwith source as (\n\n    select * from {{ source('raw', 'market_segments') }}\n    {% if is_incremental() %} where ingested_at > (select coalesce(max(ingested_at), '1900-01-01'::timestamp) from {{ this }}) {% endif %}\n\n)\n\nselect\n        segment_id,\n        segment_code,\n        segment_name,\n        source_system,\n        ingested_at\nfrom source\n",
+        "kind": "model",
+        "name": "business_market_segments",
+        "layer": "business",
+        "columns": [
+          "segment_id",
+          "segment_code",
+          "segment_name",
+          "source_system",
+          "ingested_at"
+        ],
+        "watermark": "ingested_at",
+        "unique_key": "segment_id",
+        "source_table": "market_segments"
+      },
+      {
+        "sql": "{{ config(\n    materialized='incremental',\n    unique_key='feed_row_id',\n    incremental_strategy='merge',\n    on_schema_change='append_new_columns'\n) }}\n-- Business: cleansed and standardised ota_feed_raw.\n-- Incremental: only rows with received_at beyond the last run's high-water mark are\n-- read; they MERGE on feed_row_id. Nothing is deleted or truncated.\nwith source as (\n\n    select * from {{ source('raw', 'ota_feed_raw') }}\n    {% if is_incremental() %} where received_at > (select coalesce(max(received_at), '1900-01-01'::timestamp) from {{ this }}) {% endif %}\n\n)\n\nselect\n        feed_row_id,\n        ota_name,\n        external_booking_ref,\n        hotel_code,\n        guest_name,\n        REGEXP_REPLACE(COALESCE(guest_email, ''), '[A-Za-z0-9]', 'x', 3, 0) AS guest_email,\n        arrival,\n        departure,\n        room_type_text,\n        gross_amount,\n        currency,\n        booking_status,\n        received_at,\n        source_system,\n        batch_id\nfrom source\n",
+        "kind": "model",
+        "name": "business_ota_feed_raw",
+        "layer": "business",
+        "columns": [
+          "feed_row_id",
+          "ota_name",
+          "external_booking_ref",
+          "hotel_code",
+          "guest_name",
+          "guest_email",
+          "arrival",
+          "departure",
+          "room_type_text",
+          "gross_amount",
+          "currency",
+          "booking_status",
+          "received_at",
+          "source_system",
+          "batch_id"
+        ],
+        "watermark": "received_at",
+        "unique_key": "feed_row_id",
+        "source_table": "ota_feed_raw"
+      },
+      {
+        "sql": "{{ config(\n    materialized='incremental',\n    unique_key='payment_id',\n    incremental_strategy='merge',\n    on_schema_change='append_new_columns'\n) }}\n-- Business: cleansed and standardised payments.\n-- Incremental: only rows with paid_at beyond the last run's high-water mark are\n-- read; they MERGE on payment_id. Nothing is deleted or truncated.\nwith source as (\n\n    select * from {{ source('raw', 'payments') }}\n    {% if is_incremental() %} where paid_at > (select coalesce(max(paid_at), '1900-01-01'::timestamp) from {{ this }}) {% endif %}\n\n)\n\nselect\n        card_last4,\n        payment_id,\n        reservation_id,\n        paid_at,\n        method,\n        status,\n        source_system,\n        ingested_at,\n        payment_amount\nfrom source\n",
+        "kind": "model",
+        "name": "business_payments",
+        "layer": "business",
+        "columns": [
+          "card_last4",
+          "payment_id",
+          "reservation_id",
+          "paid_at",
+          "method",
+          "status",
+          "source_system",
+          "ingested_at",
+          "payment_amount"
+        ],
+        "watermark": "paid_at",
+        "unique_key": "payment_id",
+        "source_table": "payments"
+      },
+      {
+        "sql": "{{ config(\n    materialized='incremental',\n    unique_key='extract_id',\n    incremental_strategy='merge',\n    on_schema_change='append_new_columns'\n) }}\n-- Business: cleansed and standardised pms_extract_log.\n-- Incremental: only rows with extracted_at beyond the last run's high-water mark are\n-- read; they MERGE on extract_id. Nothing is deleted or truncated.\nwith source as (\n\n    select * from {{ source('raw', 'pms_extract_log') }}\n    {% if is_incremental() %} where extracted_at > (select coalesce(max(extracted_at), '1900-01-01'::timestamp) from {{ this }}) {% endif %}\n\n)\n\nselect\n        extract_id,\n        hotel_id,\n        extract_type,\n        extracted_at,\n        rows_extracted,\n        status,\n        source_system\nfrom source\n",
+        "kind": "model",
+        "name": "business_pms_extract_log",
+        "layer": "business",
+        "columns": [
+          "extract_id",
+          "hotel_id",
+          "extract_type",
+          "extracted_at",
+          "rows_extracted",
+          "status",
+          "source_system"
+        ],
+        "watermark": "extracted_at",
+        "unique_key": "extract_id",
+        "source_table": "pms_extract_log"
+      },
+      {
+        "sql": "{{ config(\n    materialized='incremental',\n    unique_key='rate_plan_id',\n    incremental_strategy='merge',\n    on_schema_change='append_new_columns'\n) }}\n-- Business: cleansed and standardised rate_plans.\n-- Incremental: only rows with ingested_at beyond the last run's high-water mark are\n-- read; they MERGE on rate_plan_id. Nothing is deleted or truncated.\nwith source as (\n\n    select * from {{ source('raw', 'rate_plans') }}\n    {% if is_incremental() %} where ingested_at > (select coalesce(max(ingested_at), '1900-01-01'::timestamp) from {{ this }}) {% endif %}\n\n)\n\nselect\n        rate_plan_id,\n        hotel_id,\n        rate_plan_code,\n        rate_plan_name,\n        board_type,\n        is_refundable,\n        source_system,\n        ingested_at\nfrom source\n",
+        "kind": "model",
+        "name": "business_rate_plans",
+        "layer": "business",
+        "columns": [
+          "rate_plan_id",
+          "hotel_id",
+          "rate_plan_code",
+          "rate_plan_name",
+          "board_type",
+          "is_refundable",
+          "source_system",
+          "ingested_at"
+        ],
+        "watermark": "ingested_at",
+        "unique_key": "rate_plan_id",
+        "source_table": "rate_plans"
+      },
+      {
+        "sql": "{{ config(\n    materialized='incremental',\n    unique_key='reservation_room_id',\n    incremental_strategy='merge',\n    on_schema_change='append_new_columns'\n) }}\n-- Business: cleansed and standardised reservation_rooms.\n-- Incremental: only rows with ingested_at beyond the last run's high-water mark are\n-- read; they MERGE on reservation_room_id. Nothing is deleted or truncated.\nwith source as (\n\n    select * from {{ source('raw', 'reservation_rooms') }}\n    {% if is_incremental() %} where ingested_at > (select coalesce(max(ingested_at), '1900-01-01'::timestamp) from {{ this }}) {% endif %}\n\n)\n\nselect\n        reservation_room_id,\n        reservation_id,\n        room_id,\n        room_type_id,\n        rate_plan_id,\n        source_system,\n        ingested_at,\n        nightly_rate\nfrom source\n",
+        "kind": "model",
+        "name": "business_reservation_rooms",
+        "layer": "business",
+        "columns": [
+          "reservation_room_id",
+          "reservation_id",
+          "room_id",
+          "room_type_id",
+          "rate_plan_id",
+          "source_system",
+          "ingested_at",
+          "nightly_rate"
+        ],
+        "watermark": "ingested_at",
+        "unique_key": "reservation_room_id",
+        "source_table": "reservation_rooms"
+      },
+      {
+        "sql": "{{ config(\n    materialized='incremental',\n    unique_key='reservation_id',\n    incremental_strategy='merge',\n    on_schema_change='append_new_columns'\n) }}\n-- Business: cleansed and standardised reservations.\n-- Incremental: only rows with booked_at beyond the last run's high-water mark are\n-- read; they MERGE on reservation_id. Nothing is deleted or truncated.\nwith source as (\n\n    select * from {{ source('raw', 'reservations') }}\n    where not (NOT (status != 'CANCELLED'))\n      and not (NOT (status IN ('CONFIRMED', 'CHECKED_OUT')))\n      {% if is_incremental() %} and booked_at > (select coalesce(max(booked_at), '1900-01-01'::timestamp) from {{ this }}) {% endif %}\n\n)\n\nselect\n        reservation_id,\n        confirmation_no,\n        hotel_id,\n        guest_id,\n        booked_at,\n        check_in_date,\n        check_out_date,\n        nights,\n        status,\n        total_amount,\n        channel_id,\n        segment_id,\n        rate_plan_id,\n        adults,\n        children,\n        rooms_booked,\n        currency,\n        is_repeat_guest,\n        source_system,\n        ingested_at,\n        batch_id,\n        CASE WHEN status = 'CANCELLED' THEN 1 ELSE 0 END AS is_cancelled,\n        CASE WHEN status IN ('CHECKED_IN', 'CHECKED_OUT') THEN 1 ELSE 0 END AS is_realised,\n        rooms_booked * nights AS room_nights_booked\nfrom source\n",
+        "kind": "model",
+        "name": "business_reservations",
+        "layer": "business",
+        "columns": [
+          "reservation_id",
+          "confirmation_no",
+          "hotel_id",
+          "guest_id",
+          "booked_at",
+          "check_in_date",
+          "check_out_date",
+          "nights",
+          "status",
+          "total_amount",
+          "channel_id",
+          "segment_id",
+          "rate_plan_id",
+          "adults",
+          "children",
+          "rooms_booked",
+          "currency",
+          "is_repeat_guest",
+          "source_system",
+          "ingested_at",
+          "batch_id",
+          "is_cancelled",
+          "is_realised",
+          "room_nights_booked"
+        ],
+        "watermark": "booked_at",
+        "unique_key": "reservation_id",
+        "source_table": "reservations"
+      },
+      {
+        "sql": "{{ config(\n    materialized='incremental',\n    unique_key='review_id',\n    incremental_strategy='merge',\n    on_schema_change='append_new_columns'\n) }}\n-- Business: cleansed and standardised reviews.\n-- Incremental: only rows with submitted_at beyond the last run's high-water mark are\n-- read; they MERGE on review_id. Nothing is deleted or truncated.\nwith source as (\n\n    select * from {{ source('raw', 'reviews') }}\n    {% if is_incremental() %} where submitted_at > (select coalesce(max(submitted_at), '1900-01-01'::timestamp) from {{ this }}) {% endif %}\n\n)\n\nselect\n        rating,\n        review_id,\n        reservation_id,\n        hotel_id,\n        guest_id,\n        cleanliness,\n        service_score,\n        value_score,\n        title,\n        submitted_at,\n        source_system,\n        ingested_at\nfrom source\n",
+        "kind": "model",
+        "name": "business_reviews",
+        "layer": "business",
+        "columns": [
+          "rating",
+          "review_id",
+          "reservation_id",
+          "hotel_id",
+          "guest_id",
+          "cleanliness",
+          "service_score",
+          "value_score",
+          "title",
+          "submitted_at",
+          "source_system",
+          "ingested_at"
+        ],
+        "watermark": "submitted_at",
+        "unique_key": "review_id",
+        "source_table": "reviews"
+      },
+      {
+        "sql": "{{ config(\n    materialized='incremental',\n    unique_key='inventory_id',\n    incremental_strategy='merge',\n    on_schema_change='append_new_columns'\n) }}\n-- Business: cleansed and standardised room_inventory_daily.\n-- Incremental: only rows with ingested_at beyond the last run's high-water mark are\n-- read; they MERGE on inventory_id. Nothing is deleted or truncated.\nwith source as (\n\n    select * from {{ source('raw', 'room_inventory_daily') }}\n    {% if is_incremental() %} where ingested_at > (select coalesce(max(ingested_at), '1900-01-01'::timestamp) from {{ this }}) {% endif %}\n\n)\n\nselect\n        inventory_id,\n        hotel_id,\n        inventory_date,\n        rooms_available,\n        rooms_out_of_order,\n        source_system,\n        ingested_at,\n        batch_id\nfrom source\n",
+        "kind": "model",
+        "name": "business_room_inventory_daily",
+        "layer": "business",
+        "columns": [
+          "inventory_id",
+          "hotel_id",
+          "inventory_date",
+          "rooms_available",
+          "rooms_out_of_order",
+          "source_system",
+          "ingested_at",
+          "batch_id"
+        ],
+        "watermark": "ingested_at",
+        "unique_key": "inventory_id",
+        "source_table": "room_inventory_daily"
+      },
+      {
+        "sql": "{{ config(\n    materialized='incremental',\n    unique_key='room_type_id',\n    incremental_strategy='merge',\n    on_schema_change='append_new_columns'\n) }}\n-- Business: cleansed and standardised room_types.\n-- Incremental: only rows with ingested_at beyond the last run's high-water mark are\n-- read; they MERGE on room_type_id. Nothing is deleted or truncated.\nwith source as (\n\n    select * from {{ source('raw', 'room_types') }}\n    {% if is_incremental() %} where ingested_at > (select coalesce(max(ingested_at), '1900-01-01'::timestamp) from {{ this }}) {% endif %}\n\n)\n\nselect\n        room_type_code,\n        room_type_id,\n        hotel_id,\n        room_type_name,\n        max_occupancy,\n        source_system,\n        ingested_at,\n        base_rate\nfrom source\n",
+        "kind": "model",
+        "name": "business_room_types",
+        "layer": "business",
+        "columns": [
+          "room_type_code",
+          "room_type_id",
+          "hotel_id",
+          "room_type_name",
+          "max_occupancy",
+          "source_system",
+          "ingested_at",
+          "base_rate"
+        ],
+        "watermark": "ingested_at",
+        "unique_key": "room_type_id",
+        "source_table": "room_types"
+      },
+      {
+        "sql": "{{ config(\n    materialized='incremental',\n    unique_key='room_id',\n    incremental_strategy='merge',\n    on_schema_change='append_new_columns'\n) }}\n-- Business: cleansed and standardised rooms.\n-- Incremental: only rows with ingested_at beyond the last run's high-water mark are\n-- read; they MERGE on room_id. Nothing is deleted or truncated.\nwith source as (\n\n    select * from {{ source('raw', 'rooms') }}\n    {% if is_incremental() %} where ingested_at > (select coalesce(max(ingested_at), '1900-01-01'::timestamp) from {{ this }}) {% endif %}\n\n)\n\nselect\n        room_id,\n        hotel_id,\n        room_type_id,\n        room_number,\n        floor_no,\n        is_active,\n        source_system,\n        ingested_at\nfrom source\n",
+        "kind": "model",
+        "name": "business_rooms",
+        "layer": "business",
+        "columns": [
+          "room_id",
+          "hotel_id",
+          "room_type_id",
+          "room_number",
+          "floor_no",
+          "is_active",
+          "source_system",
+          "ingested_at"
+        ],
+        "watermark": "ingested_at",
+        "unique_key": "room_id",
+        "source_table": "rooms"
+      },
+      {
+        "sql": "{{ config(\n    materialized='incremental',\n    unique_key='stay_night_id',\n    incremental_strategy='merge',\n    on_schema_change='append_new_columns'\n) }}\n-- Business: cleansed and standardised stay_nights.\n-- Incremental: only rows with ingested_at beyond the last run's high-water mark are\n-- read; they MERGE on stay_night_id. Nothing is deleted or truncated.\nwith source as (\n\n    select * from {{ source('raw', 'stay_nights') }}\n    {% if is_incremental() %} where ingested_at > (select coalesce(max(ingested_at), '1900-01-01'::timestamp) from {{ this }}) {% endif %}\n\n)\n\nselect\n        stay_night_id,\n        stay_date,\n        reservation_id,\n        hotel_id,\n        room_id,\n        room_type_id,\n        is_occupied,\n        source_system,\n        ingested_at,\n        room_revenue\nfrom source\n",
+        "kind": "model",
+        "name": "business_stay_nights",
+        "layer": "business",
+        "columns": [
+          "stay_night_id",
+          "stay_date",
+          "reservation_id",
+          "hotel_id",
+          "room_id",
+          "room_type_id",
+          "is_occupied",
+          "source_system",
+          "ingested_at",
+          "room_revenue"
+        ],
+        "watermark": "ingested_at",
+        "unique_key": "stay_night_id",
+        "source_table": "stay_nights"
+      }
+    ],
+    "rename_maps": {
+      "rooms": {
+        "room_id": "room_id",
+        "floor_no": "floor_no",
+        "hotel_id": "hotel_id",
+        "is_active": "is_active",
+        "ingested_at": "ingested_at",
+        "room_number": "room_number",
+        "room_type_id": "room_type_id",
+        "source_system": "source_system"
+      },
+      "guests": {
+        "email": "email",
+        "phone": "phone",
+        "country": "country",
+        "guest_id": "guest_id",
+        "full_name": "full_name",
+        "guest_ref": "guest_ref",
+        "created_at": "created_at",
+        "ingested_at": "ingested_at",
+        "date_of_birth": "date_of_birth",
+        "source_system": "source_system"
+      },
+      "hotels": {
+        "city": "city",
+        "brand": "brand",
+        "country": "country",
+        "batch_id": "batch_id",
+        "hotel_id": "hotel_id",
+        "timezone": "timezone",
+        "opened_on": "opened_on",
+        "hotel_code": "hotel_code",
+        "hotel_name": "hotel_name",
+        "ingested_at": "ingested_at",
+        "star_rating": "star_rating",
+        "total_rooms": "total_rooms",
+        "source_system": "source_system"
+      },
+      "reviews": {
+        "title": "title",
+        "rating": "rating",
+        "guest_id": "guest_id",
+        "hotel_id": "hotel_id",
+        "review_id": "review_id",
+        "cleanliness": "cleanliness",
+        "ingested_at": "ingested_at",
+        "value_score": "value_score",
+        "submitted_at": "submitted_at",
+        "service_score": "service_score",
+        "source_system": "source_system",
+        "reservation_id": "reservation_id"
+      },
+      "channels": {
+        "channel_id": "channel_id",
+        "ingested_at": "ingested_at",
+        "channel_code": "channel_code",
+        "channel_name": "channel_name",
+        "channel_group": "channel_group",
+        "source_system": "source_system",
+        "commission_pct": "commission_pct"
+      },
+      "payments": {
+        "method": "method",
+        "status": "status",
+        "paid_at": "paid_at",
+        "card_last4": "card_last4",
+        "payment_id": "payment_id",
+        "ingested_at": "ingested_at",
+        "source_system": "source_system",
+        "payment_amount": "payment_amount",
+        "reservation_id": "reservation_id"
+      },
+      "rate_plans": {
+        "hotel_id": "hotel_id",
+        "board_type": "board_type",
+        "ingested_at": "ingested_at",
+        "rate_plan_id": "rate_plan_id",
+        "is_refundable": "is_refundable",
+        "source_system": "source_system",
+        "rate_plan_code": "rate_plan_code",
+        "rate_plan_name": "rate_plan_name"
+      },
+      "room_types": {
+        "hotel_id": "hotel_id",
+        "base_rate": "base_rate",
+        "ingested_at": "ingested_at",
+        "room_type_id": "room_type_id",
+        "max_occupancy": "max_occupancy",
+        "source_system": "source_system",
+        "room_type_code": "room_type_code",
+        "room_type_name": "room_type_name"
+      },
+      "stay_nights": {
+        "room_id": "room_id",
+        "hotel_id": "hotel_id",
+        "stay_date": "stay_date",
+        "ingested_at": "ingested_at",
+        "is_occupied": "is_occupied",
+        "room_revenue": "room_revenue",
+        "room_type_id": "room_type_id",
+        "source_system": "source_system",
+        "stay_night_id": "stay_night_id",
+        "reservation_id": "reservation_id"
+      },
+      "ota_feed_raw": {
+        "arrival": "arrival",
+        "batch_id": "batch_id",
+        "currency": "currency",
+        "ota_name": "ota_name",
+        "departure": "departure",
+        "guest_name": "guest_name",
+        "hotel_code": "hotel_code",
+        "feed_row_id": "feed_row_id",
+        "guest_email": "guest_email",
+        "received_at": "received_at",
+        "gross_amount": "gross_amount",
+        "source_system": "source_system",
+        "booking_status": "booking_status",
+        "room_type_text": "room_type_text",
+        "external_booking_ref": "external_booking_ref"
+      },
+      "reservations": {
+        "adults": "adults",
+        "nights": "nights",
+        "status": "status",
+        "batch_id": "batch_id",
+        "children": "children",
+        "currency": "currency",
+        "guest_id": "guest_id",
+        "hotel_id": "hotel_id",
+        "booked_at": "booked_at",
+        "channel_id": "channel_id",
+        "segment_id": "segment_id",
+        "ingested_at": "ingested_at",
+        "rate_plan_id": "rate_plan_id",
+        "rooms_booked": "rooms_booked",
+        "total_amount": "total_amount",
+        "check_in_date": "check_in_date",
+        "source_system": "source_system",
+        "check_out_date": "check_out_date",
+        "reservation_id": "reservation_id",
+        "confirmation_no": "confirmation_no",
+        "is_repeat_guest": "is_repeat_guest"
+      },
+      "cancellations": {
+        "ingested_at": "ingested_at",
+        "reason_code": "reason_code",
+        "cancelled_at": "cancelled_at",
+        "cancelled_by": "cancelled_by",
+        "source_system": "source_system",
+        "penalty_amount": "penalty_amount",
+        "reservation_id": "reservation_id",
+        "cancellation_id": "cancellation_id"
+      },
+      "folio_charges": {
+        "currency": "currency",
+        "hotel_id": "hotel_id",
+        "charge_id": "charge_id",
+        "charge_date": "charge_date",
+        "charge_type": "charge_type",
+        "description": "description",
+        "ingested_at": "ingested_at",
+        "charge_amount": "charge_amount",
+        "source_system": "source_system",
+        "reservation_id": "reservation_id"
+      },
+      "loyalty_members": {
+        "tier": "tier",
+        "guest_id": "guest_id",
+        "loyalty_id": "loyalty_id",
+        "enrolled_on": "enrolled_on",
+        "ingested_at": "ingested_at",
+        "membership_no": "membership_no",
+        "source_system": "source_system",
+        "points_balance": "points_balance"
+      },
+      "market_segments": {
+        "segment_id": "segment_id",
+        "ingested_at": "ingested_at",
+        "segment_code": "segment_code",
+        "segment_name": "segment_name",
+        "source_system": "source_system"
+      },
+      "pms_extract_log": {
+        "status": "status",
+        "hotel_id": "hotel_id",
+        "extract_id": "extract_id",
+        "extract_type": "extract_type",
+        "extracted_at": "extracted_at",
+        "source_system": "source_system",
+        "rows_extracted": "rows_extracted"
+      },
+      "batch_load_audit": {
+        "status": "status",
+        "audit_id": "audit_id",
+        "batch_id": "batch_id",
+        "rows_loaded": "rows_loaded",
+        "target_table": "target_table",
+        "rows_rejected": "rows_rejected",
+        "source_system": "source_system",
+        "load_started_at": "load_started_at",
+        "load_finished_at": "load_finished_at"
+      },
+      "reservation_rooms": {
+        "room_id": "room_id",
+        "ingested_at": "ingested_at",
+        "nightly_rate": "nightly_rate",
+        "rate_plan_id": "rate_plan_id",
+        "room_type_id": "room_type_id",
+        "source_system": "source_system",
+        "reservation_id": "reservation_id",
+        "reservation_room_id": "reservation_room_id"
+      },
+      "housekeeping_tasks": {
+        "status": "status",
+        "room_id": "room_id",
+        "task_id": "task_id",
+        "hotel_id": "hotel_id",
+        "task_date": "task_date",
+        "task_type": "task_type",
+        "ingested_at": "ingested_at",
+        "minutes_taken": "minutes_taken",
+        "source_system": "source_system"
+      },
+      "room_inventory_daily": {
+        "batch_id": "batch_id",
+        "hotel_id": "hotel_id",
+        "ingested_at": "ingested_at",
+        "inventory_id": "inventory_id",
+        "source_system": "source_system",
+        "inventory_date": "inventory_date",
+        "rooms_available": "rooms_available",
+        "rooms_out_of_order": "rooms_out_of_order"
+      },
+      "daily_hotel_performance": {
+        "arrivals": "arrivals",
+        "batch_id": "batch_id",
+        "hotel_id": "hotel_id",
+        "departures": "departures",
+        "rooms_sold": "rooms_sold",
+        "ingested_at": "ingested_at",
+        "room_revenue": "room_revenue",
+        "business_date": "business_date",
+        "other_revenue": "other_revenue",
+        "source_system": "source_system",
+        "performance_id": "performance_id",
+        "rooms_available": "rooms_available",
+        "rooms_out_of_order": "rooms_out_of_order"
+      }
+    },
+    "final_columns": {
+      "rooms": [
+        "room_id",
+        "hotel_id",
+        "room_type_id",
+        "room_number",
+        "floor_no",
+        "is_active",
+        "source_system",
+        "ingested_at"
+      ],
+      "guests": [
+        "guest_id",
+        "guest_ref",
+        "full_name",
+        "email",
+        "phone",
+        "country",
+        "date_of_birth",
+        "created_at",
+        "source_system",
+        "ingested_at",
+        "guest_age_years"
+      ],
+      "hotels": [
+        "hotel_id",
+        "hotel_code",
+        "hotel_name",
+        "star_rating",
+        "total_rooms",
+        "city",
+        "country",
+        "brand",
+        "opened_on",
+        "timezone",
+        "source_system",
+        "ingested_at",
+        "batch_id"
+      ],
+      "reviews": [
+        "rating",
+        "review_id",
+        "reservation_id",
+        "hotel_id",
+        "guest_id",
+        "cleanliness",
+        "service_score",
+        "value_score",
+        "title",
+        "submitted_at",
+        "source_system",
+        "ingested_at"
+      ],
+      "channels": [
+        "channel_name",
+        "channel_id",
+        "channel_code",
+        "channel_group",
+        "commission_pct",
+        "source_system",
+        "ingested_at"
+      ],
+      "payments": [
+        "card_last4",
+        "payment_id",
+        "reservation_id",
+        "paid_at",
+        "method",
+        "status",
+        "source_system",
+        "ingested_at",
+        "payment_amount"
+      ],
+      "rate_plans": [
+        "rate_plan_id",
+        "hotel_id",
+        "rate_plan_code",
+        "rate_plan_name",
+        "board_type",
+        "is_refundable",
+        "source_system",
+        "ingested_at"
+      ],
+      "room_types": [
+        "room_type_code",
+        "room_type_id",
+        "hotel_id",
+        "room_type_name",
+        "max_occupancy",
+        "source_system",
+        "ingested_at",
+        "base_rate"
+      ],
+      "stay_nights": [
+        "stay_night_id",
+        "stay_date",
+        "reservation_id",
+        "hotel_id",
+        "room_id",
+        "room_type_id",
+        "is_occupied",
+        "source_system",
+        "ingested_at",
+        "room_revenue"
+      ],
+      "ota_feed_raw": [
+        "feed_row_id",
+        "ota_name",
+        "external_booking_ref",
+        "hotel_code",
+        "guest_name",
+        "guest_email",
+        "arrival",
+        "departure",
+        "room_type_text",
+        "gross_amount",
+        "currency",
+        "booking_status",
+        "received_at",
+        "source_system",
+        "batch_id"
+      ],
+      "reservations": [
+        "reservation_id",
+        "confirmation_no",
+        "hotel_id",
+        "guest_id",
+        "booked_at",
+        "check_in_date",
+        "check_out_date",
+        "nights",
+        "status",
+        "total_amount",
+        "channel_id",
+        "segment_id",
+        "rate_plan_id",
+        "adults",
+        "children",
+        "rooms_booked",
+        "currency",
+        "is_repeat_guest",
+        "source_system",
+        "ingested_at",
+        "batch_id",
+        "is_cancelled",
+        "is_realised",
+        "room_nights_booked"
+      ],
+      "cancellations": [
+        "cancellation_id",
+        "reservation_id",
+        "cancelled_at",
+        "reason_code",
+        "cancelled_by",
+        "source_system",
+        "ingested_at",
+        "penalty_amount"
+      ],
+      "folio_charges": [
+        "charge_type",
+        "charge_id",
+        "reservation_id",
+        "hotel_id",
+        "charge_date",
+        "description",
+        "currency",
+        "source_system",
+        "ingested_at",
+        "charge_amount"
+      ],
+      "loyalty_members": [
+        "tier",
+        "loyalty_id",
+        "guest_id",
+        "membership_no",
+        "points_balance",
+        "enrolled_on",
+        "source_system",
+        "ingested_at"
+      ],
+      "market_segments": [
+        "segment_id",
+        "segment_code",
+        "segment_name",
+        "source_system",
+        "ingested_at"
+      ],
+      "pms_extract_log": [
+        "extract_id",
+        "hotel_id",
+        "extract_type",
+        "extracted_at",
+        "rows_extracted",
+        "status",
+        "source_system"
+      ],
+      "batch_load_audit": [
+        "audit_id",
+        "batch_id",
+        "target_table",
+        "load_started_at",
+        "load_finished_at",
+        "rows_loaded",
+        "rows_rejected",
+        "status",
+        "source_system"
+      ],
+      "reservation_rooms": [
+        "reservation_room_id",
+        "reservation_id",
+        "room_id",
+        "room_type_id",
+        "rate_plan_id",
+        "source_system",
+        "ingested_at",
+        "nightly_rate"
+      ],
+      "housekeeping_tasks": [
+        "task_id",
+        "hotel_id",
+        "room_id",
+        "task_date",
+        "task_type",
+        "status",
+        "minutes_taken",
+        "source_system",
+        "ingested_at"
+      ],
+      "room_inventory_daily": [
+        "inventory_id",
+        "hotel_id",
+        "inventory_date",
+        "rooms_available",
+        "rooms_out_of_order",
+        "source_system",
+        "ingested_at",
+        "batch_id"
+      ],
+      "daily_hotel_performance": [
+        "performance_id",
+        "hotel_id",
+        "business_date",
+        "rooms_available",
+        "rooms_sold",
+        "rooms_out_of_order",
+        "arrivals",
+        "departures",
+        "source_system",
+        "ingested_at",
+        "batch_id",
+        "other_revenue",
+        "room_revenue",
+        "rooms_unsold"
+      ]
+    },
+    "source_prefix": "",
+    "source_tables": [
+      "batch_load_audit",
+      "cancellations",
+      "channels",
+      "daily_hotel_performance",
+      "folio_charges",
+      "guests",
+      "hotels",
+      "housekeeping_tasks",
+      "loyalty_members",
+      "market_segments",
+      "ota_feed_raw",
+      "payments",
+      "pms_extract_log",
+      "rate_plans",
+      "reservation_rooms",
+      "reservations",
+      "reviews",
+      "room_inventory_daily",
+      "room_types",
+      "rooms",
+      "stay_nights"
+    ]
+  },
+  "revision": "6b380033-c0de-4f3f-87f9-55b704530790",
+  "file_edits": [
+    {
+      "at": "2026-10-06T17:57:04.835631Z",
+      "path": "models/business/business_batch_load_audit.sql",
+      "actor": "nitishemails@gmail.com",
+      "stage": "prepared"
+    }
+  ],
+  "crew_events": [
+    "6b380033-c0de-4f3f-87f9-55b704530790:silver_generating::",
+    "6b380033-c0de-4f3f-87f9-55b704530790:silver_review::cc2656a854b77f19103ac0c3b3624326eb40478fee49f79859c92196ec2a9d8b",
+    "6b380033-c0de-4f3f-87f9-55b704530790:silver_approved::cc2656a854b77f19103ac0c3b3624326eb40478fee49f79859c92196ec2a9d8b",
+    "6b380033-c0de-4f3f-87f9-55b704530790:model_review:5ab314a02c30d92ce581f68bb3f77022414e76dd2df37744873d9685ce5cb116:cc2656a854b77f19103ac0c3b3624326eb40478fee49f79859c92196ec2a9d8b",
+    "6b380033-c0de-4f3f-87f9-55b704530790:model_approved:5ab314a02c30d92ce581f68bb3f77022414e76dd2df37744873d9685ce5cb116:cc2656a854b77f19103ac0c3b3624326eb40478fee49f79859c92196ec2a9d8b"
+  ],
+  "fingerprint": "993100e54d2c38896a115fc70699de7aab5c46325d5e3187e7928e58ac196a02",
+  "model_digest": "5ab314a02c30d92ce581f68bb3f77022414e76dd2df37744873d9685ce5cb116",
+  "model_approval": {
+    "at": "2026-10-06T17:57:37.172009+00:00",
+    "actor": "nitishemails@gmail.com",
+    "digest": "5ab314a02c30d92ce581f68bb3f77022414e76dd2df37744873d9685ce5cb116"
+  },
+  "model_provider": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+  "ontology_digest": "ce5ad08dbd0cc697ee4ab140cd14f1c821822354a64892cfc9074c2fed8a46f0",
+  "prepared_digest": "cc2656a854b77f19103ac0c3b3624326eb40478fee49f79859c92196ec2a9d8b",
+  "silver_approval": {
+    "at": "2026-10-06T17:57:08.694351+00:00",
+    "actor": "nitishemails@gmail.com",
+    "digest": "cc2656a854b77f19103ac0c3b3624326eb40478fee49f79859c92196ec2a9d8b"
+  },
+  "model_validation": {
+    "mode": "static",
+    "green": true,
+    "checks": [
+      "Prepared columns",
+      "Natural keys",
+      "Verified joins",
+      "No join fanout",
+      "Acyclic dependencies",
+      "KPI coverage",
+      "Evidence references"
+    ],
+    "errors": [],
+    "warnings": [
+      "Currency-valued KPIs remain at source-currency grain because no approved FX source exists.",
+      "Repeat Guest % uses the approved is_repeat_guest business flag; the measured source contradiction remains recorded for remediation."
+    ],
+    "warehouse_tests": "Not run; live uniqueness, reconciliation and KPI values require warehouse execution."
+  },
+  "model_reused_from": "d9f777b3-2805-4d44-a23c-d26573a7c8be",
+  "silver_validation": {
+    "mode": "static",
+    "green": true,
+    "checks": [
+      "SQL syntax",
+      "Incremental branches",
+      "MERGE key projection",
+      "Rule coverage"
+    ],
+    "errors": [],
+    "warehouse_tests": "Not run; generated models have not been executed in Snowflake."
+  },
+  "last_crew_event_at": "2026-10-06T17:57:37.173858+00:00",
+  "delivery_claim": 1791309487.1965194
+}

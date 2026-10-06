@@ -1,0 +1,49 @@
+version: 2
+sources:
+  - name: raw
+    database: HOTEL
+    schema: BRONZE_HOTEL
+    description: "Raw layer — source data as landed, unmodified."
+    tables:
+      - name: batch_load_audit
+        description: "Landed copy of batch_load_audit."
+      - name: cancellations
+        description: "Landed copy of cancellations."
+      - name: channels
+        description: "Landed copy of channels."
+      - name: daily_hotel_performance
+        description: "Landed copy of daily_hotel_performance."
+      - name: folio_charges
+        description: "Landed copy of folio_charges."
+      - name: guests
+        description: "Landed copy of guests."
+      - name: hotels
+        description: "Landed copy of hotels."
+      - name: housekeeping_tasks
+        description: "Landed copy of housekeeping_tasks."
+      - name: loyalty_members
+        description: "Landed copy of loyalty_members."
+      - name: market_segments
+        description: "Landed copy of market_segments."
+      - name: ota_feed_raw
+        description: "Landed copy of ota_feed_raw."
+      - name: payments
+        description: "Landed copy of payments."
+      - name: pms_extract_log
+        description: "Landed copy of pms_extract_log."
+      - name: rate_plans
+        description: "Landed copy of rate_plans."
+      - name: reservation_rooms
+        description: "Landed copy of reservation_rooms."
+      - name: reservations
+        description: "Landed copy of reservations."
+      - name: reviews
+        description: "Landed copy of reviews."
+      - name: room_inventory_daily
+        description: "Landed copy of room_inventory_daily."
+      - name: room_types
+        description: "Landed copy of room_types."
+      - name: rooms
+        description: "Landed copy of rooms."
+      - name: stay_nights
+        description: "Landed copy of stay_nights."

@@ -1,0 +1,128 @@
+version: 2
+models:
+  - name: business_batch_load_audit
+    description: "Business layer — cleansed, standardised, deduplicated batch_load_audit."
+    columns:
+      - name: audit_id
+        tests:
+          - not_null
+  - name: business_cancellations
+    description: "Business layer — cleansed, standardised, deduplicated cancellations."
+    columns:
+      - name: cancellation_id
+        tests:
+          - not_null
+  - name: business_channels
+    description: "Business layer — cleansed, standardised, deduplicated channels."
+    columns:
+      - name: channel_name
+        tests:
+          - not_null
+  - name: business_daily_hotel_performance
+    description: "Business layer — cleansed, standardised, deduplicated daily_hotel_performance."
+    columns:
+      - name: performance_id
+        tests:
+          - not_null
+  - name: business_folio_charges
+    description: "Business layer — cleansed, standardised, deduplicated folio_charges."
+    columns:
+      - name: charge_type
+        tests:
+          - not_null
+  - name: business_guests
+    description: "Business layer — cleansed, standardised, deduplicated guests."
+    columns:
+      - name: guest_id
+        tests:
+          - not_null
+  - name: business_hotels
+    description: "Business layer — cleansed, standardised, deduplicated hotels."
+    columns:
+      - name: hotel_id
+        tests:
+          - not_null
+  - name: business_housekeeping_tasks
+    description: "Business layer — cleansed, standardised, deduplicated housekeeping_tasks."
+    columns:
+      - name: task_id
+        tests:
+          - not_null
+  - name: business_loyalty_members
+    description: "Business layer — cleansed, standardised, deduplicated loyalty_members."
+    columns:
+      - name: tier
+        tests:
+          - not_null
+  - name: business_market_segments
+    description: "Business layer — cleansed, standardised, deduplicated market_segments."
+    columns:
+      - name: segment_id
+        tests:
+          - not_null
+  - name: business_ota_feed_raw
+    description: "Business layer — cleansed, standardised, deduplicated ota_feed_raw."
+    columns:
+      - name: feed_row_id
+        tests:
+          - not_null
+  - name: business_payments
+    description: "Business layer — cleansed, standardised, deduplicated payments."
+    columns:
+      - name: card_last4
+        tests:
+          - not_null
+  - name: business_pms_extract_log
+    description: "Business layer — cleansed, standardised, deduplicated pms_extract_log."
+    columns:
+      - name: extract_id
+        tests:
+          - not_null
+  - name: business_rate_plans
+    description: "Business layer — cleansed, standardised, deduplicated rate_plans."
+    columns:
+      - name: rate_plan_id
+        tests:
+          - not_null
+  - name: business_reservation_rooms
+    description: "Business layer — cleansed, standardised, deduplicated reservation_rooms."
+    columns:
+      - name: reservation_room_id
+        tests:
+          - not_null
+  - name: business_reservations
+    description: "Business layer — cleansed, standardised, deduplicated reservations."
+    columns:
+      - name: reservation_id
+        tests:
+          - not_null
+  - name: business_reviews
+    description: "Business layer — cleansed, standardised, deduplicated reviews."
+    columns:
+      - name: rating
+        tests:
+          - not_null
+  - name: business_room_inventory_daily
+    description: "Business layer — cleansed, standardised, deduplicated room_inventory_daily."
+    columns:
+      - name: inventory_id
+        tests:
+          - not_null
+  - name: business_room_types
+    description: "Business layer — cleansed, standardised, deduplicated room_types."
+    columns:
+      - name: room_type_code
+        tests:
+          - not_null
+  - name: business_rooms
+    description: "Business layer — cleansed, standardised, deduplicated rooms."
+    columns:
+      - name: room_id
+        tests:
+          - not_null
+  - name: business_stay_nights
+    description: "Business layer — cleansed, standardised, deduplicated stay_nights."
+    columns:
+      - name: stay_night_id
+        tests:
+          - not_null

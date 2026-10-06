@@ -1,0 +1,108 @@
+version: 2
+models:
+  - name: dim_channels
+    config:
+      materialized: incremental
+      unique_key: dim_channels_key
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: dim_guests
+    config:
+      materialized: incremental
+      unique_key: dim_guests_key
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: dim_hotels
+    config:
+      materialized: incremental
+      unique_key: dim_hotels_key
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: dim_loyalty_members
+    config:
+      materialized: incremental
+      unique_key: dim_loyalty_members_key
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: dim_market_segments
+    config:
+      materialized: incremental
+      unique_key: dim_market_segments_key
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: dim_rate_plans
+    config:
+      materialized: incremental
+      unique_key: dim_rate_plans_key
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: dim_room_types
+    config:
+      materialized: incremental
+      unique_key: dim_room_types_key
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: dim_rooms
+    config:
+      materialized: incremental
+      unique_key: dim_rooms_key
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: fact_daily_hotel_performance
+    config:
+      materialized: incremental
+      unique_key: fact_daily_hotel_performance_key
+      incremental_strategy: merge
+      quote_columns: true
+      transient: false
+  - name: fact_folio_charges
+    config:
+      materialized: incremental
+      unique_key: fact_folio_charges_key
+      incremental_strategy: merge
+      quote_columns: true
+      transient: false
+  - name: fact_payments
+    config:
+      materialized: incremental
+      unique_key: fact_payments_key
+      incremental_strategy: merge
+      quote_columns: true
+      transient: false
+  - name: fact_reservations
+    config:
+      materialized: incremental
+      unique_key: fact_reservations_key
+      incremental_strategy: merge
+      quote_columns: true
+      transient: false
+  - name: fact_reviews
+    config:
+      materialized: incremental
+      unique_key: fact_reviews_key
+      incremental_strategy: merge
+      quote_columns: true
+      transient: false
+  - name: fact_stay_nights
+    config:
+      materialized: incremental
+      unique_key: fact_stay_nights_key
+      incremental_strategy: merge
+      quote_columns: true
+      transient: false

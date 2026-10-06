@@ -1,0 +1,62 @@
+version: 2
+models:
+  - name: kpi_adr__average_daily_rate_
+    config:
+      materialized: table
+      quote_columns: true
+      transient: false
+  - name: kpi_average_review_score
+    config:
+      materialized: table
+      quote_columns: true
+      transient: false
+  - name: kpi_average_stay
+    config:
+      materialized: table
+      quote_columns: true
+      transient: false
+  - name: kpi_cancellation_pct
+    config:
+      materialized: table
+      quote_columns: true
+      transient: false
+  - name: kpi_no_show_pct
+    config:
+      materialized: table
+      quote_columns: true
+      transient: false
+  - name: kpi_occupancy_pct
+    config:
+      materialized: table
+      quote_columns: true
+      transient: false
+  - name: kpi_repeat_guest_pct
+    config:
+      materialized: table
+      quote_columns: true
+      transient: false
+  - name: kpi_revenue_by_channel
+    config:
+      materialized: table
+      quote_columns: true
+      transient: false
+  - name: kpi_revpar__revenue_per_available_room_
+    config:
+      materialized: table
+      quote_columns: true
+      transient: false
+  - name: kpi_rooms_unsold
+    config:
+      materialized: table
+      quote_columns: true
+      transient: false
+  - name: kpi_total_bookings
+    config:
+      materialized: table
+      quote_columns: true
+      transient: false
+  - name: kpi_total_revenue
+    config:
+      materialized: table
+      quote_columns: true
+      transient: false

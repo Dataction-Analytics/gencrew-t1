@@ -1,0 +1,170 @@
+version: 2
+models:
+  - name: business_batch_load_audit
+    config:
+      materialized: incremental
+      unique_key: audit_id
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: business_cancellations
+    config:
+      materialized: incremental
+      unique_key: cancellation_id
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: business_channels
+    config:
+      materialized: incremental
+      unique_key: channel_id
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: business_daily_hotel_performance
+    config:
+      materialized: incremental
+      unique_key: performance_id
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: business_folio_charges
+    config:
+      materialized: incremental
+      unique_key: charge_id
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: business_guests
+    config:
+      materialized: incremental
+      unique_key: guest_id
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: business_hotels
+    config:
+      materialized: incremental
+      unique_key: hotel_id
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: business_housekeeping_tasks
+    config:
+      materialized: incremental
+      unique_key: task_id
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: business_loyalty_members
+    config:
+      materialized: incremental
+      unique_key: loyalty_id
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: business_market_segments
+    config:
+      materialized: incremental
+      unique_key: segment_id
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: business_ota_feed_raw
+    config:
+      materialized: incremental
+      unique_key: feed_row_id
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: business_payments
+    config:
+      materialized: incremental
+      unique_key: payment_id
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: business_pms_extract_log
+    config:
+      materialized: incremental
+      unique_key: extract_id
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: business_rate_plans
+    config:
+      materialized: incremental
+      unique_key: rate_plan_id
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: business_reservation_rooms
+    config:
+      materialized: incremental
+      unique_key: reservation_room_id
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: business_reservations
+    config:
+      materialized: incremental
+      unique_key: reservation_id
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: business_reviews
+    config:
+      materialized: incremental
+      unique_key: review_id
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: business_room_inventory_daily
+    config:
+      materialized: incremental
+      unique_key: inventory_id
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: business_room_types
+    config:
+      materialized: incremental
+      unique_key: room_type_id
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: business_rooms
+    config:
+      materialized: incremental
+      unique_key: room_id
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false
+  - name: business_stay_nights
+    config:
+      materialized: incremental
+      unique_key: stay_night_id
+      incremental_strategy: merge
+      on_schema_change: append_new_columns
+      quote_columns: true
+      transient: false

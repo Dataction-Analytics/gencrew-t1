@@ -1,0 +1,26 @@
+version: 2
+models:
+  - name: kpi_total_bookings
+    description: "Total Bookings"
+  - name: kpi_total_revenue
+    description: "Total Revenue"
+  - name: kpi_occupancy_pct
+    description: "Occupancy %"
+  - name: kpi_adr__average_daily_rate_
+    description: "ADR (Average Daily Rate)"
+  - name: kpi_revpar__revenue_per_available_room_
+    description: "RevPAR (Revenue Per Available Room)"
+  - name: kpi_cancellation_pct
+    description: "Cancellation %"
+  - name: kpi_average_stay
+    description: "Average Stay"
+  - name: kpi_repeat_guest_pct
+    description: "Repeat Guest %"
+  - name: kpi_no_show_pct
+    description: "No Show %"
+  - name: kpi_revenue_by_channel
+    description: "Revenue by Channel"
+  - name: kpi_rooms_unsold
+    description: "Rooms Unsold"
+  - name: kpi_average_review_score
+    description: "Average Review Score"

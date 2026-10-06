@@ -1,0 +1,28 @@
+name: gencrew_transformation
+version: 1.0.0
+config-version: 2
+profile: gencrew_transformation
+model-paths:
+  - models
+macro-paths:
+  - macros
+test-paths:
+  - tests
+models:
+  gencrew_transformation:
+    raw:
+      +materialized: view
+      +database: HOTEL
+      +schema: BRONZE_HOTEL
+    business:
+      +materialized: table
+      +database: HOTEL
+      +schema: SILVER_HOTEL
+    reporting:
+      +materialized: table
+      +database: HOTEL
+      +schema: GOLD_HOTEL
+    kpi:
+      +materialized: table
+      +database: HOTEL
+      +schema: GOLD_HOTEL

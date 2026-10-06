@@ -1,0 +1,238 @@
+version: 2
+models:
+  - name: dim_hotels
+    description: "Type-2 dimension from hotels; one row per version, natural key hotel_id; is_current marks the active version."
+    columns:
+      - name: dim_hotels_key
+        tests:
+          - unique
+          - not_null
+      - name: valid_from
+        tests:
+          - not_null
+      - name: valid_to
+        tests:
+          - not_null
+      - name: is_current
+        tests:
+          - not_null
+  - name: dim_guests
+    description: "Type-2 dimension from guests; one row per version, natural key guest_id; is_current marks the active version."
+    columns:
+      - name: dim_guests_key
+        tests:
+          - unique
+          - not_null
+      - name: valid_from
+        tests:
+          - not_null
+      - name: valid_to
+        tests:
+          - not_null
+      - name: is_current
+        tests:
+          - not_null
+  - name: dim_channels
+    description: "Type-2 dimension from channels; one row per version, natural key channel_id; is_current marks the active version."
+    columns:
+      - name: dim_channels_key
+        tests:
+          - unique
+          - not_null
+      - name: valid_from
+        tests:
+          - not_null
+      - name: valid_to
+        tests:
+          - not_null
+      - name: is_current
+        tests:
+          - not_null
+  - name: dim_market_segments
+    description: "Type-2 dimension from market_segments; one row per version, natural key segment_id; is_current marks the active version."
+    columns:
+      - name: dim_market_segments_key
+        tests:
+          - unique
+          - not_null
+      - name: valid_from
+        tests:
+          - not_null
+      - name: valid_to
+        tests:
+          - not_null
+      - name: is_current
+        tests:
+          - not_null
+  - name: dim_rate_plans
+    description: "Type-2 dimension from rate_plans; one row per version, natural key rate_plan_id; is_current marks the active version."
+    columns:
+      - name: dim_rate_plans_key
+        tests:
+          - unique
+          - not_null
+      - name: valid_from
+        tests:
+          - not_null
+      - name: valid_to
+        tests:
+          - not_null
+      - name: is_current
+        tests:
+          - not_null
+  - name: dim_room_types
+    description: "Type-2 dimension from room_types; one row per version, natural key room_type_id; is_current marks the active version."
+    columns:
+      - name: dim_room_types_key
+        tests:
+          - unique
+          - not_null
+      - name: valid_from
+        tests:
+          - not_null
+      - name: valid_to
+        tests:
+          - not_null
+      - name: is_current
+        tests:
+          - not_null
+  - name: dim_rooms
+    description: "Type-2 dimension from rooms; one row per version, natural key room_id; is_current marks the active version."
+    columns:
+      - name: dim_rooms_key
+        tests:
+          - unique
+          - not_null
+      - name: valid_from
+        tests:
+          - not_null
+      - name: valid_to
+        tests:
+          - not_null
+      - name: is_current
+        tests:
+          - not_null
+  - name: dim_loyalty_members
+    description: "Type-2 dimension from loyalty_members; one row per version, natural key loyalty_id; is_current marks the active version."
+    columns:
+      - name: dim_loyalty_members_key
+        tests:
+          - unique
+          - not_null
+      - name: valid_from
+        tests:
+          - not_null
+      - name: valid_to
+        tests:
+          - not_null
+      - name: is_current
+        tests:
+          - not_null
+  - name: fact_reservations
+    description: "Fact from reservations. Grain: One row per reservation transaction"
+    columns:
+      - name: fact_reservations_key
+        tests:
+          - unique
+          - not_null
+      - name: dim_hotels_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_hotels')
+              field: dim_hotels_key
+      - name: dim_guests_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_guests')
+              field: dim_guests_key
+      - name: dim_channels_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_channels')
+              field: dim_channels_key
+      - name: dim_rate_plans_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_rate_plans')
+              field: dim_rate_plans_key
+  - name: fact_daily_hotel_performance
+    description: "Fact from daily_hotel_performance. Grain: One row per hotel per business day"
+    columns:
+      - name: fact_daily_hotel_performance_key
+        tests:
+          - unique
+          - not_null
+      - name: dim_hotels_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_hotels')
+              field: dim_hotels_key
+  - name: fact_folio_charges
+    description: "Fact from folio_charges. Grain: One row per charge transaction"
+    columns:
+      - name: fact_folio_charges_key
+        tests:
+          - unique
+          - not_null
+      - name: dim_hotels_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_hotels')
+              field: dim_hotels_key
+  - name: fact_stay_nights
+    description: "Fact from stay_nights. Grain: One row per room per night of stay"
+    columns:
+      - name: fact_stay_nights_key
+        tests:
+          - unique
+          - not_null
+      - name: dim_hotels_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_hotels')
+              field: dim_hotels_key
+      - name: dim_rooms_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_rooms')
+              field: dim_rooms_key
+      - name: dim_room_types_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_room_types')
+              field: dim_room_types_key
+  - name: fact_payments
+    description: "Fact from payments. Grain: One row per payment transaction"
+    columns:
+      - name: fact_payments_key
+        tests:
+          - unique
+          - not_null
+  - name: fact_reviews
+    description: "Fact from reviews. Grain: One row per review submission"
+    columns:
+      - name: fact_reviews_key
+        tests:
+          - unique
+          - not_null
+      - name: dim_hotels_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_hotels')
+              field: dim_hotels_key
+      - name: dim_guests_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_guests')
+              field: dim_guests_key
